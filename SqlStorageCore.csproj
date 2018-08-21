@@ -4,24 +4,11 @@
     <TargetFramework>net472</TargetFramework>
     <RootNamespace>SKBKontur.Catalogue.EDI.SqlStorageCore</RootNamespace>
     <AssemblyName>Catalogue.EDI.SqlStorageCore</AssemblyName>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <NoWarn />
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-    <OutputPath>..\..\Assemblies\Temp\</OutputPath>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <WarningLevel>0</WarningLevel>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\..\Assemblies\Temp\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="6.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.0" />
@@ -37,9 +24,6 @@
     <Reference Include="GroboContainer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
         <SpecificVersion>False</SpecificVersion>
         <HintPath>..\..\Assemblies\GroboContainer.dll</HintPath>
-    </Reference>
-    <Reference Include="JetBrains.Annotations">
-      <HintPath>..\..\Assemblies\JetBrains.Annotations.dll</HintPath>
     </Reference>
   </ItemGroup>
 
