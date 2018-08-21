@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 
-using SKBKontur.Catalogue.Core.DataGeneration.Fluent;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
 using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
+using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.DataGenertation;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
