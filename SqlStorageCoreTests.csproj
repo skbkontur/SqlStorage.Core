@@ -5,6 +5,7 @@
     <RootNamespace>SKBKontur.EDIFunctionalTests.SqlStorageCoreTests</RootNamespace>
     <AssemblyName>Catalogue.EDIFunctionalTests.SqlStorageCoreTests</AssemblyName>
     <OutputPath>bin\</OutputPath>
+    <NoWarn>612;618;649</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
