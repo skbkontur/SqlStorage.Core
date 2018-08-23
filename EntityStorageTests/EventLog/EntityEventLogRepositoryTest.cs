@@ -166,7 +166,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
             }
         }
 
-        [Test, AndEntityStorageCleanUp(typeof(EventLogEntity))]
+        [Test, AndSqlStorageCleanUp(typeof(EventLogEntity))]
         public void TestGetMaxTimestampForOffset()
         {
             var maxForInitialOffset = eventLogRepository.GetMaxTimestampForOffset(initialOffset);
@@ -179,7 +179,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
             maxForNewOffset.Should().BeBefore(currentTime);
         }
 
-        [Test, AndEntityStorageCleanUp(typeof(EventLogEntity))]
+        [Test, AndSqlStorageCleanUp(typeof(EventLogEntity))]
         public void TestGetLastOffsetForTimestamp()
         {
             entityStorage.Create(GenerateObjects().First());

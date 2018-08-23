@@ -9,7 +9,7 @@ using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEn
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
 {
-    [AndEntityStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
+    [AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
     public class DeleteTests : EntityStorageTestBase<TestValueTypedPropertiesStorageElement>
     {
         [Test]

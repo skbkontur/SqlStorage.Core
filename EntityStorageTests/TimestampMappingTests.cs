@@ -10,7 +10,7 @@ using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEn
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
 {
-    [AndEntityStorageCleanUp(typeof(TestTimestampElement))]
+    [AndSqlStorageCleanUp(typeof(TestTimestampElement))]
     public class TimestampMappingTests : EntityStorageTestBase<TestTimestampElement>
     {
         [Test]
