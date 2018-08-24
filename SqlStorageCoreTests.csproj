@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <PlatformTarget>x64</PlatformTarget>
     <TargetFramework>net472</TargetFramework>
     <RootNamespace>SKBKontur.EDIFunctionalTests.SqlStorageCoreTests</RootNamespace>
     <AssemblyName>Catalogue.EDIFunctionalTests.SqlStorageCoreTests</AssemblyName>
