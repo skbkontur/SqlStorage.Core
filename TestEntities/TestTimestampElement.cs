@@ -1,7 +1,7 @@
 ﻿using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 using SKBKontur.Catalogue.Objects;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
 {
     public class TestTimestampElement : IdentifiableSqlEntity
     {

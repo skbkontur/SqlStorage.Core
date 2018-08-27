@@ -2,7 +2,7 @@
 
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
 {
     public class TestValueTypedPropertiesStorageElement : IdentifiableSqlEntity
     {

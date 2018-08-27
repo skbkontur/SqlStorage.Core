@@ -13,14 +13,14 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
 using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities;
+using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.EventLog
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
 {
     [TestFixture(typeof(TestValueTypedPropertiesStorageElement))]
     [TestFixture(typeof(TestJsonColumnElement))]
     [TestFixture(typeof(TestJsonArrayColumnElement))]
-    public class EntityEventLogRepositoryTest<TEntity> : EntityStorageTestBase<TEntity>
+    public class SqlEventLogRepositoryTest<TEntity> : SqlStorageTestBase<TEntity>
         where TEntity : class, IIdentifiableSqlEntity, new()
     {
         [EdiSetUp]

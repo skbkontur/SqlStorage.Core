@@ -11,10 +11,10 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
 using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
-    [EdiTestSuite, WithTestEntityStorage]
-    public class EntityStorageTestBase<TEntity>
+    [EdiTestSuite, WithTestSqlStorage]
+    public class SqlStorageTestBase<TEntity>
         where TEntity : class, IIdentifiableSqlEntity, new()
     {
         protected readonly Func<EquivalencyAssertionOptions<TEntity>, EquivalencyAssertionOptions<TEntity>> equivalenceOptionsConfig = EquivalenceOptionsConfig;
@@ -25,7 +25,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
             return options;
         }
 
-        protected static IEnumerable<TEntity> GenerateObjects(int count = 1)
+        protected IEnumerable<TEntity> GenerateObjects(int count = 1)
         {
             return fixture.Build<TEntity>().CreateMany(count);
         }
@@ -42,6 +42,6 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Injected]
         protected readonly ISqlStorage<TEntity> sqlStorage;
 
-        private static readonly Fixture fixture = new Fixture();
+        private readonly Fixture fixture = new Fixture();
     }
 }

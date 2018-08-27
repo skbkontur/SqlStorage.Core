@@ -6,12 +6,12 @@ using NUnit.Framework;
 
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
 using SKBKontur.Catalogue.Objects;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities;
+using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [AndSqlStorageCleanUp(typeof(TestTimestampElement))]
-    public class TimestampMappingTests : EntityStorageTestBase<TestTimestampElement>
+    public class TimestampMappingTests : SqlStorageTestBase<TestTimestampElement>
     {
         [Test]
         public void TestReadWrite()

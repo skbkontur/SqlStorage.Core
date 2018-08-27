@@ -11,12 +11,12 @@ using NUnit.Framework;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
 using SKBKontur.Catalogue.Linq;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities;
+using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
-    public class ReadWriteTests : EntityStorageTestBase<TestValueTypedPropertiesStorageElement>
+    public class ReadWriteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement>
     {
         [Test]
         public void TestReadWriteSingleObject()

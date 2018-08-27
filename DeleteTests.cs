@@ -5,12 +5,12 @@ using System.Linq.Expressions;
 using NUnit.Framework;
 
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities;
+using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
-    public class DeleteTests : EntityStorageTestBase<TestValueTypedPropertiesStorageElement>
+    public class DeleteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement>
     {
         [Test]
         public void DeleteByCriterion()

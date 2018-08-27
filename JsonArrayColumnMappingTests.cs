@@ -4,11 +4,11 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities;
+using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
-    public class TestJsonArrayColumnMappingTests : EntityStorageTestBase<TestJsonArrayColumnElement>
+    public class JsonArrayColumnMappingTests : SqlStorageTestBase<TestJsonArrayColumnElement>
     {
         [Test]
         public void TestWriteReadSimple()

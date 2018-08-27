@@ -9,10 +9,10 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
 using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.EventLog
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
 {
-    [EdiTestSuite, WithTestEntityStorage]
-    public class EntitiesStorageTimeRepositoryTest
+    [EdiTestSuite, WithTestSqlStorage]
+    public class SqlStorageTimeRepositoryTest
     {
         [Test]
         public void TestGetCurrentTime()

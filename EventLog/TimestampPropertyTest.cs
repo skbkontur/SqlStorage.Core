@@ -8,11 +8,11 @@ using NUnit.Framework;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
 using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
 using SKBKontur.Catalogue.Objects;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities;
+using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.EventLog
+namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
 {
-    public class TimestampPropertyTest : EntityStorageTestBase<TestTimestampElement>
+    public class TimestampPropertyTest : SqlStorageTestBase<TestTimestampElement>
     {
         [Test]
         public void TestReadEvent()
