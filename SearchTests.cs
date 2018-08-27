@@ -32,7 +32,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
                            var batchList = batch as IList<TestValueTypedPropertiesStorageElement> ?? batch.ToList();
                            batchList.ForEach(x =>
                                {
-                                   var findResult = storage.Find(y => y.IntProperty == x.IntProperty, 0, 1000);
+                                   var findResult = storage.Find(y => y.IntProperty == x.IntProperty);
 
                                    AssertUnorderedArraysEquality(findResult, objectsCaptured.Where(y => y.IntProperty == x.IntProperty));
                                });

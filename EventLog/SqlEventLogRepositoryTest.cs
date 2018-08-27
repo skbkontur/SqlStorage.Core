@@ -166,6 +166,42 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
             }
         }
 
+        [Test]
+        public void TestLimit()
+        {
+            var startOffset = eventLogRepository.GetLastOffset();
+            var expectedEntities = GenerateObjects(testObjectsCount).ToArray();
+            sqlStorage.Create(expectedEntities);
+            var notExpectedEntities = GenerateObjects(testObjectsCount).ToArray();
+            sqlStorage.Create(notExpectedEntities);
+            var events = eventLogRepository.GetEvents(startOffset, eventLogRepository.GetLastOffset(), expectedEntities.Length);
+            events.Length.Should().Be(expectedEntities.Length);
+            var actualSnapshots = events.Select(e => e.EntitySnapshot).ToArray();
+            AssertUnorderedArraysEquality(actualSnapshots, expectedEntities);
+        }
+
+        [Test]
+        public void TestOrdering()
+        {
+            var entity = GenerateObjects().First();
+            var startOffset = eventLogRepository.GetLastOffset();
+            sqlStorage.Create(entity);
+            sqlStorage.Update(entity);
+            sqlStorage.Delete(entity.Id);
+            var events = eventLogRepository.GetEvents(startOffset, eventLogRepository.GetLastOffset(), 3);
+            events.Should().BeInAscendingOrder(e => e.EventOffset);
+            events.Select(e => e.EventType)
+                  .Should()
+                  .BeEquivalentTo(
+                      new[]
+                          {
+                              SqlEventType.Create,
+                              SqlEventType.Update,
+                              SqlEventType.Delete
+                          },
+                      options => options.WithStrictOrdering());
+        }
+
         [Test, AndSqlStorageCleanUp(typeof(EventLogStorageElement))]
         public void TestGetMaxTimestampForOffset()
         {

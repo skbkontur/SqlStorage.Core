@@ -30,7 +30,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             return fixture.Build<TEntity>().CreateMany(count);
         }
 
-        protected static void AssertUnorderedArraysEquality(IEnumerable<TEntity> actualObjects, IEnumerable<TEntity> objects)
+        protected static void AssertUnorderedArraysEquality<T>(IEnumerable<T> actualObjects, IEnumerable<T> objects)
         {
             actualObjects.Should().BeEquivalentTo(objects, options =>
                 {
