@@ -16,7 +16,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestWriteSearchObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             InternalTestWriteAndReadThroughMultipleThreads(entities, entityStorage);
         }
 

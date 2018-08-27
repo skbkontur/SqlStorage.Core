@@ -15,7 +15,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void DeleteByCriterion()
         {
-            var entities = GenerateObjects().Take(10).ToArray();
+            var entities = GenerateObjects(count: 10).ToArray();
             const int intConstraint = -42;
             for (var i = 0; i < entities.Length / 2; i++)
             {

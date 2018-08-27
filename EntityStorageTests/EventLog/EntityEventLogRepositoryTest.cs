@@ -44,7 +44,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         [Test]
         public void TestCreateMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.Create(entities);
             var events = eventLogRepository.GetEvents(initialOffset, eventLogRepository.GetLastOffset(), entities.Length + 1);
             events.Length.Should().Be(entities.Length);
@@ -73,10 +73,10 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         [Test]
         public void TestUpdateMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.Create(entities);
             var offset = eventLogRepository.GetLastOffset();
-            var updatedEntities = GenerateObjects().Take(testObjectsCount).Select((e, i) =>
+            var updatedEntities = GenerateObjects(testObjectsCount).Select((e, i) =>
                 {
                     e.Id = entities[i].Id;
                     return e;
@@ -109,7 +109,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         [Test]
         public void TestDeleteMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.Create(entities);
             var offset = eventLogRepository.GetLastOffset();
             entityStorage.Delete(entities.Select(e => e.Id).ToArray());
@@ -124,7 +124,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         public void TestCreateAndUpdateAndDeleteMultipleObjectsThroughMultipleThreads()
         {
             var random = new Random(DateTime.Now.Millisecond);
-            var initialEntities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var initialEntities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.Create(initialEntities);
             var entitiesState = new ConcurrentDictionary<Guid, EntityEventType>();
             var offset = eventLogRepository.GetLastOffset();
@@ -170,7 +170,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         public void TestGetMaxTimestampForOffset()
         {
             var maxForInitialOffset = eventLogRepository.GetMaxTimestampForOffset(initialOffset);
-            entityStorage.Create(GenerateObjects().Take(testObjectsCount).ToArray());
+            entityStorage.Create(GenerateObjects(testObjectsCount).ToArray());
             var newOffset = eventLogRepository.GetLastOffset();
             var maxForNewOffset = eventLogRepository.GetMaxTimestampForOffset(newOffset);
 
@@ -185,7 +185,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
             entityStorage.Create(GenerateObjects().First());
             var offset = eventLogRepository.GetLastOffset();
             var now = entitesStorageTimeRepository.GetCurrentStorageTime();
-            entityStorage.Create(GenerateObjects().Take(testObjectsCount).ToArray());
+            entityStorage.Create(GenerateObjects(testObjectsCount).ToArray());
 
             eventLogRepository.GetLastOffsetForTimestamp(now).Should().Be(offset);
         }

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using AutoFixture;
+
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
 using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.DataGenertation;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
@@ -24,9 +25,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
             return options;
         }
 
-        protected static IEnumerable<TEntity> GenerateObjects()
+        protected static IEnumerable<TEntity> GenerateObjects(int count = 1)
         {
-            return DataGenerator.Random<TEntity>().WithGuidProperty(x => x.Id);
+            return fixture.Build<TEntity>().CreateMany(count);
         }
 
         protected static void AssertUnorderedArraysEquality(IEnumerable<TEntity> actualObjects, IEnumerable<TEntity> objects)
@@ -40,5 +41,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
 
         [Injected]
         protected readonly IEntityStorage<TEntity> entityStorage;
+
+        private static readonly Fixture fixture = new Fixture();
     }
 }

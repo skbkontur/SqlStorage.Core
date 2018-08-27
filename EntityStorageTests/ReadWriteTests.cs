@@ -44,9 +44,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestRewriteMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.CreateOrUpdate(entities);
-            var moreEntities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var moreEntities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.CreateOrUpdate(entities.Concat(moreEntities).ToArray());
             entityStorage.ReadAll().Length.Should().Be(testObjectsCount * 2);
         }
@@ -56,7 +56,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         {
             var entity = GenerateObjects().First();
             var actualObject = entityStorage.TryRead(entity.Id);
-            Assert.That(actualObject, Is.Null);
+            actualObject.Should().BeNull();
         }
 
         [Test]
@@ -79,7 +79,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestDeleteMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.CreateOrUpdate(entities);
             var ids = entities.Select(e => e.Id).Concat(new[] {Guid.NewGuid()}).ToArray();
             Action deletion = () => entityStorage.Delete(ids);
@@ -100,7 +100,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestCreateMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.Create(entities);
             var actualEntities = entityStorage.TryRead(entities.Select(e => e.Id).ToArray());
             AssertUnorderedArraysEquality(actualEntities, entities);
@@ -118,7 +118,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestRecreateMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.Create(entities);
             Action repeatCreation = () => entityStorage.Create(entities);
             repeatCreation.Should().Throw<Exception>();
@@ -139,7 +139,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestUpdateMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.Create(entities);
             foreach (var entity in entities)
             {
@@ -161,7 +161,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestUpdateNonExistingMultipleObjects()
         {
-            var entities = GenerateObjects().Take(testObjectsCount).ToArray();
+            var entities = GenerateObjects(testObjectsCount).ToArray();
             Action update = () => entityStorage.Update(entities);
             update.Should().Throw<Exception>();
         }
@@ -169,7 +169,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestReadWriteMultipleObjects()
         {
-            var objects = GenerateObjects().Take(testObjectsCount).ToArray();
+            var objects = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.CreateOrUpdate(objects);
             var actualObjects = entityStorage.TryRead(objects.Select(x => x.Id).ToArray());
             AssertUnorderedArraysEquality(actualObjects, objects);
@@ -178,7 +178,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestReadWriteMultipleObjectsThroughSingleWrites()
         {
-            var objects = GenerateObjects().Take(testObjectsCount).ToArray();
+            var objects = GenerateObjects(testObjectsCount).ToArray();
             objects.ForEach(x => entityStorage.CreateOrUpdate(x));
             var actualObjects = entityStorage.TryRead(objects.Select(x => x.Id).ToArray());
             AssertUnorderedArraysEquality(actualObjects, objects);
@@ -187,7 +187,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestReadThroughSingleReadAndMultipleWrite()
         {
-            var objects = GenerateObjects().Take(testObjectsCount).ToArray();
+            var objects = GenerateObjects(testObjectsCount).ToArray();
             entityStorage.CreateOrUpdate(objects);
             var actualObjects = objects.Select(x => x.Id).Select(x => entityStorage.TryRead(x)).ToArray();
             AssertUnorderedArraysEquality(actualObjects, objects);
@@ -196,7 +196,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestWriteThroughMultipleThreadsAndCheckResultThroughSingleReads()
         {
-            var objects = GenerateObjects().Take(testObjectsCount * 10).ToArray();
+            var objects = GenerateObjects(testObjectsCount * 10).ToArray();
             Parallel.ForEach(objects.Batch(testObjectsCount), batch => batch.ForEach(x => entityStorage.CreateOrUpdate(x)));
             var actualObjects = entityStorage.TryRead(objects.Select(x => x.Id).ToArray());
             AssertUnorderedArraysEquality(actualObjects, objects);
@@ -205,13 +205,13 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestWriteAndReadThroughMultipleThreads()
         {
-            InternalTestWriteAndReadThroughMultipleThreads(GenerateObjects().Take(testObjectsCount * 10).ToArray(), entityStorage);
+            InternalTestWriteAndReadThroughMultipleThreads(GenerateObjects(testObjectsCount * 10).ToArray(), entityStorage);
         }
 
         [Test]
         public void TestWriteAndDeleteAndReadThroughMultipleThreads()
         {
-            var objects = GenerateObjects().Take(testObjectsCount).ToArray();
+            var objects = GenerateObjects(testObjectsCount).ToArray();
             var objectToDelete = objects.RandomElements(new Random(), testObjectsCount / 3).ToArray();
             InternalTestWriteAndDeleteAndReadThroughMultipleThreads(objects.ToArray(), objectToDelete.ToArray(), entityStorage);
         }
@@ -219,7 +219,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         [Test]
         public void TestWriteAndDeleteAndReadAll()
         {
-            var objects = GenerateObjects().Take(testObjectsCount).ToArray();
+            var objects = GenerateObjects(testObjectsCount).ToArray();
             var objectsToDelete = objects.RandomElements(new Random(), testObjectsCount / 3).ToArray();
             entityStorage.CreateOrUpdate(objects);
             entityStorage.Delete(objectsToDelete.Select(o => o.Id).ToArray());
