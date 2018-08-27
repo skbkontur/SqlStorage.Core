@@ -45,7 +45,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
                     e => e.Offset > fromOffsetExclusive
                          && e.Offset <= toOffsetInclusive
                          && e.EntityType == entityTypeName,
-                    0, limit)
+                    e => e.Offset,
+                    limit)
                 .Select(BuildEntityEvent)
                 .ToArray();
         }

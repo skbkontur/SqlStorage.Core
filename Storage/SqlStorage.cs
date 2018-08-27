@@ -161,15 +161,28 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
         }
 
         [NotNull, ItemNotNull]
-        public T[] Find([NotNull] Expression<Func<T, bool>> criterion, int start, int limit)
+        public T[] Find([NotNull] Expression<Func<T, bool>> criterion)
         {
             using (var context = createDbContext())
             {
                 return context
                     .Set<T>()
                     .AsNoTracking()
-                    .Skip(start)
                     .Where(criterion)
+                    .ToArray();
+            }
+        }
+
+        [NotNull, ItemNotNull]
+        public T[] Find<TKey>([NotNull] Expression<Func<T, bool>> criterion, [NotNull] Expression<Func<T, TKey>> orderBy, int limit)
+        {
+            using (var context = createDbContext())
+            {
+                return context
+                    .Set<T>()
+                    .AsNoTracking()
+                    .Where(criterion)
+                    .OrderBy(orderBy)
                     .Take(limit)
                     .ToArray();
             }
@@ -180,17 +193,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
             using (var context = createDbContext())
             {
                 return context.Set<T>().Count(criterion);
-            }
-        }
-
-        [CanBeNull]
-        public TValue GetMaxValue<TValue>([NotNull] Expression<Func<T, TValue>> propertySelector)
-        {
-            using (var context = createDbContext())
-            {
-                if (!context.Set<T>().Any())
-                    return default(TValue);
-                return context.Set<T>().Max(propertySelector);
             }
         }
 

@@ -32,12 +32,12 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
         void Delete([NotNull] Expression<Func<T, bool>> criterion);
 
         [NotNull, ItemNotNull]
-        T[] Find([NotNull] Expression<Func<T, bool>> criterion, int start, int limit);
+        T[] Find([NotNull] Expression<Func<T, bool>> criterion);
+
+        [NotNull, ItemNotNull]
+        T[] Find<TKey>([NotNull] Expression<Func<T, bool>> criterion, Expression<Func<T, TKey>> orderBy, int limit);
 
         int GetCount([NotNull] Expression<Func<T, bool>> criterion);
-
-        [CanBeNull]
-        TValue GetMaxValue<TValue>([NotNull] Expression<Func<T, TValue>> propertySelector);
 
         [CanBeNull]
         TValue GetMaxValue<TValue>([NotNull] Expression<Func<T, TValue>> propertySelector, [NotNull] Expression<Func<T, bool>> filter);
