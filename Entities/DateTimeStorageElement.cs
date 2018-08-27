@@ -2,7 +2,7 @@
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Entities
 {
-    public class DateTimeEntity
+    public class DateTimeStorageElement
     {
         public DateTime Value { get; set; }
     }

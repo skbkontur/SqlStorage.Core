@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Entities
 {
-    public class EventLogEntity : IdentifiableEntity
+    public class EventLogStorageElement : IdentifiableSqlEntity
     {
         [NotNull]
         public string EntityType { get; set; }

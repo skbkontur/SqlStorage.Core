@@ -7,10 +7,10 @@ using SKBKontur.Catalogue.Objects;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventFeeds
 {
-    public class EntityStorageOffsetInterpreter<TEntity> : IOffsetInterpreter<long>
-        where TEntity : IIdentifiableEntity
+    public class SqlStorageOffsetInterpreter<TEntity> : IOffsetInterpreter<long>
+        where TEntity : IIdentifiableSqlEntity
     {
-        public EntityStorageOffsetInterpreter(IEntitiesEventLogRepository<TEntity> eventLogRepository)
+        public SqlStorageOffsetInterpreter(ISqlEventLogRepository<TEntity> eventLogRepository)
         {
             this.eventLogRepository = eventLogRepository;
         }
@@ -38,6 +38,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventFeeds
             return eventLogRepository.GetLastOffsetForTimestamp(timestamp.ToDateTime());
         }
 
-        private readonly IEntitiesEventLogRepository<TEntity> eventLogRepository;
+        private readonly ISqlEventLogRepository<TEntity> eventLogRepository;
     }
 }

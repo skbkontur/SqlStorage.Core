@@ -11,11 +11,11 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions;
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public static class EntityStorageExtensions
+    public static class SqlStorageExtensions
     {
         [CanBeNull]
-        public static T FindSingleOrDefault<T>([NotNull] this IEntityStorage<T> storage, [NotNull] Expression<Func<T, bool>> criterion)
-            where T : class, IIdentifiableEntity
+        public static T FindSingleOrDefault<T>([NotNull] this ISqlStorage<T> storage, [NotNull] Expression<Func<T, bool>> criterion)
+            where T : class, IIdentifiableSqlEntity
         {
             var searchResult = storage.Find(criterion, 0, 2);
             if (searchResult.Length > 1)
@@ -25,8 +25,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
         }
 
         [NotNull, ItemNotNull]
-        public static IEnumerable<T> FindAll<T>([NotNull] this IEntityStorage<T> storage, [NotNull] Expression<Func<T, bool>> criterion)
-            where T : class, IIdentifiableEntity
+        public static IEnumerable<T> FindAll<T>([NotNull] this ISqlStorage<T> storage, [NotNull] Expression<Func<T, bool>> criterion)
+            where T : class, IIdentifiableSqlEntity
         {
             const int bulkSize = 1000;
             var start = 0;

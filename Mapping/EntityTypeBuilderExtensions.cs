@@ -73,7 +73,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping
         [NotNull]
         public static EntityTypeBuilder HasEventLogWriteTrigger([NotNull] this EntityTypeBuilder entityTypeBuilder)
         {
-            entityTypeBuilder.Metadata.SetAnnotation(EdiEntityAnnotationsNames.EventLogTrigger, true);
+            entityTypeBuilder.Metadata.SetAnnotation(SqlAnnotationsNames.EventLogTrigger, true);
             return entityTypeBuilder;
         }
 

@@ -7,20 +7,20 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext
 {
-    public abstract class EntitiesRegistry
+    public abstract class SqlEntitiesRegistry
     {
         protected void RegisterEntityType<T>()
-            where T : IIdentifiableEntity
+            where T : IIdentifiableSqlEntity
         {
-            entitiesTypes.Add(typeof(T));
+            sqlEntityTypes.Add(typeof(T));
         }
 
         [NotNull]
         public IEnumerable<Type> GetEntitesTypes()
         {
-            return entitiesTypes;
+            return sqlEntityTypes;
         }
 
-        private readonly List<Type> entitiesTypes = new List<Type>();
+        private readonly List<Type> sqlEntityTypes = new List<Type>();
     }
 }

@@ -9,12 +9,12 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext
 {
-    public sealed class EntitiesDatabaseContext : DbContext
+    public sealed class SqlDatabaseContext : DbContext
     {
-        public EntitiesDatabaseContext(DatabaseConnectionProvider connectionProvider, EntitiesRegistry entitiesRegistry, MigrationsAssemblyNameProvider migrationsAssemblyNameProvider)
+        public SqlDatabaseContext(SqlConnectionProvider connectionProvider, SqlEntitiesRegistry sqlEntitiesRegistry, SqlMigrationsAssemblyNameProvider sqlMigrationsAssemblyNameProvider)
         {
-            this.migrationsAssemblyNameProvider = migrationsAssemblyNameProvider;
-            this.entitiesRegistry = entitiesRegistry;
+            this.sqlMigrationsAssemblyNameProvider = sqlMigrationsAssemblyNameProvider;
+            this.sqlEntitiesRegistry = sqlEntitiesRegistry;
             connectionString = connectionProvider.ConnectionString;
         }
 
@@ -23,18 +23,18 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext
             optionsBuilder.UseNpgsql(connectionString, options =>
                 {
                     options.EnableRetryOnFailure();
-                    if (migrationsAssemblyNameProvider.IsMigrationsAssemblyNameDefined)
-                        options.MigrationsAssembly(migrationsAssemblyNameProvider.MigrationsAssemblyName);
+                    if (sqlMigrationsAssemblyNameProvider.IsMigrationsAssemblyNameDefined)
+                        options.MigrationsAssembly(sqlMigrationsAssemblyNameProvider.MigrationsAssemblyName);
                 });
-            optionsBuilder.ReplaceService<IMigrationsSqlGenerator, EntitiesMigrationsSqlGenerator>();
-            optionsBuilder.ReplaceService<IMigrationsAnnotationProvider, EntitiesMigrationsAnnotationProvider>();
+            optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqlMigrationsScriptGenerator>();
+            optionsBuilder.ReplaceService<IMigrationsAnnotationProvider, SqlMigrationsAnnotationProvider>();
         }
 
         protected override void OnModelCreating([NotNull] ModelBuilder modelBuilder)
         {
             ConfigureEventLog(modelBuilder);
 
-            foreach (var type in entitiesRegistry.GetEntitesTypes())
+            foreach (var type in sqlEntitiesRegistry.GetEntitesTypes())
             {
                 modelBuilder
                     .Entity(type)
@@ -48,26 +48,26 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext
         {
             modelBuilder.HasPostgresExtension("uuid-ossp");
 
-            var logTypeBuilder = modelBuilder.Entity<EventLogEntity>();
+            var logTypeBuilder = modelBuilder.Entity<EventLogStorageElement>();
             logTypeBuilder.Property(l => l.Id).HasDefaultValueSql("uuid_generate_v4()");
             logTypeBuilder.Property(l => l.Offset).UseNpgsqlSerialColumn();
             logTypeBuilder.HasIndex(l => new {l.Offset}).ForNpgsqlHasMethod("brin");
 
-            foreach (var type in entitiesRegistry.GetEntitesTypes())
+            foreach (var type in sqlEntitiesRegistry.GetEntitesTypes())
             {
                 modelBuilder.Entity(type).HasEventLogWriteTrigger();
             }
 
-            modelBuilder.Query<DateTimeEntity>();
+            modelBuilder.Query<DateTimeStorageElement>();
         }
 
         [NotNull]
         private readonly string connectionString;
 
         [NotNull]
-        private readonly MigrationsAssemblyNameProvider migrationsAssemblyNameProvider;
+        private readonly SqlMigrationsAssemblyNameProvider sqlMigrationsAssemblyNameProvider;
 
         [NotNull]
-        private readonly EntitiesRegistry entitiesRegistry;
+        private readonly SqlEntitiesRegistry sqlEntitiesRegistry;
     }
 }

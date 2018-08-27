@@ -9,9 +9,9 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext;
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public class EntityStorageMigrator
+    public class SqlStorageMigrator
     {
-        public EntityStorageMigrator(Func<EntitiesDatabaseContext> createDbContext)
+        public SqlStorageMigrator(Func<SqlDatabaseContext> createDbContext)
         {
             this.createDbContext = createDbContext;
         }
@@ -24,6 +24,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
             }
         }
 
-        private readonly Func<EntitiesDatabaseContext> createDbContext;
+        private readonly Func<SqlDatabaseContext> createDbContext;
     }
 }

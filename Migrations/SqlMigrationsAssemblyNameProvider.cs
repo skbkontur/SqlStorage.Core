@@ -2,15 +2,15 @@
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
 {
-    public class MigrationsAssemblyNameProvider
+    public class SqlMigrationsAssemblyNameProvider
     {
-        public MigrationsAssemblyNameProvider()
+        public SqlMigrationsAssemblyNameProvider()
         {
             MigrationsAssemblyName = null;
         }
 
         [NotNull]
-        public MigrationsAssemblyNameProvider WithAssemblyName([NotNull] string name)
+        public SqlMigrationsAssemblyNameProvider WithAssemblyName([NotNull] string name)
         {
             MigrationsAssemblyName = name;
             return this;

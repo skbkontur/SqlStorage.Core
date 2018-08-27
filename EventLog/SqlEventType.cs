@@ -1,6 +1,6 @@
 ﻿namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 {
-    public enum EntityEventType
+    public enum SqlEventType
     {
         Create,
         Update,

@@ -7,7 +7,7 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
 {
-    public interface IEntityStorage<T> where T : class, IIdentifiableEntity
+    public interface ISqlStorage<T> where T : class, IIdentifiableSqlEntity
     {
         [CanBeNull]
         T TryRead(Guid id);

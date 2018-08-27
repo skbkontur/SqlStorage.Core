@@ -2,7 +2,7 @@
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Entities
 {
-    public interface IIdentifiableEntity
+    public interface IIdentifiableSqlEntity
     {
         Guid Id { get; set; }
     }

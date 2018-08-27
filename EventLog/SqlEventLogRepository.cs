@@ -15,32 +15,32 @@ using SKBKontur.Catalogue.Objects;
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 {
     [UsedImplicitly]
-    public class EntitiesEventLogRepository<TEntity> : IEntitiesEventLogRepository<TEntity>
-        where TEntity : IIdentifiableEntity
+    public class SqlEventLogRepository<TEntity> : ISqlEventLogRepository<TEntity>
+        where TEntity : IIdentifiableSqlEntity
     {
-        public EntitiesEventLogRepository(IEntityStorage<EventLogEntity> eventLogEntityStorage, Func<EntitiesDatabaseContext> createDbContext)
+        public SqlEventLogRepository(ISqlStorage<EventLogStorageElement> eventLogSqlStorage, Func<SqlDatabaseContext> createDbContext)
         {
-            this.eventLogEntityStorage = eventLogEntityStorage;
+            this.eventLogSqlStorage = eventLogSqlStorage;
             var entityType = typeof(TEntity);
             entityTypeName = GetEventLogEntityTypeName(createDbContext, entityType);
         }
 
         [NotNull]
-        private static string GetEventLogEntityTypeName([NotNull] Func<EntitiesDatabaseContext> createDbContext, [NotNull] Type entityType)
+        private static string GetEventLogEntityTypeName([NotNull] Func<SqlDatabaseContext> createDbContext, [NotNull] Type entityType)
         {
             using (var context = createDbContext())
             {
                 var name = context.Model.FindEntityType(entityType)?.Relational()?.TableName;
                 if (string.IsNullOrEmpty(name))
-                    throw new InvalidProgramStateException($"EventLog entity type not found for {entityType.Name}");
+                    throw new InvalidProgramStateException($"EventLog entity type name not found for {entityType.Name}");
                 return name;
             }
         }
 
         [NotNull, ItemNotNull]
-        public EntityEvent<TEntity>[] GetEvents(long fromOffsetExclusive, long toOffsetInclusive, int limit)
+        public SqlEvent<TEntity>[] GetEvents(long fromOffsetExclusive, long toOffsetInclusive, int limit)
         {
-            return eventLogEntityStorage
+            return eventLogSqlStorage
                 .Find(
                     e => e.Offset > fromOffsetExclusive
                          && e.Offset <= toOffsetInclusive
@@ -52,7 +52,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 
         public int GetCount(long fromOffsetExclusive, long toOffsetInclusive)
         {
-            return eventLogEntityStorage
+            return eventLogSqlStorage
                 .GetCount(
                     e => e.Offset > fromOffsetExclusive
                          && e.Offset <= toOffsetInclusive
@@ -61,30 +61,30 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 
         public long GetLastOffset()
         {
-            return eventLogEntityStorage.GetMaxValue(
+            return eventLogSqlStorage.GetMaxValue(
                 e => e.Offset,
                 filter : e => e.EntityType == entityTypeName);
         }
 
         public long GetLastOffsetForTimestamp(DateTime timestamp)
         {
-            return eventLogEntityStorage.GetMaxValue(
+            return eventLogSqlStorage.GetMaxValue(
                 e => e.Offset,
                 filter : e => e.Timestamp <= timestamp && e.EntityType == entityTypeName);
         }
 
         public DateTime GetMaxTimestampForOffset(long offset)
         {
-            return eventLogEntityStorage.GetMaxValue(
+            return eventLogSqlStorage.GetMaxValue(
                 e => e.Timestamp,
                 filter : e => e.Offset <= offset && e.EntityType == entityTypeName);
         }
 
         [NotNull]
-        private static EntityEvent<TEntity> BuildEntityEvent([NotNull] EventLogEntity e)
+        private static SqlEvent<TEntity> BuildEntityEvent([NotNull] EventLogStorageElement e)
         {
             var entitySnapshot = JsonConvert.DeserializeObject<TEntity>(e.EntityContent);
-            return new EntityEvent<TEntity>
+            return new SqlEvent<TEntity>
                 {
                     EventId = e.Id,
                     EventOffset = e.Offset,
@@ -93,22 +93,22 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
                 };
         }
 
-        private static EntityEventType ParseEntityEventType([CanBeNull] string type)
+        private static SqlEventType ParseEntityEventType([CanBeNull] string type)
         {
             switch (type)
             {
             case "INSERT":
-                return EntityEventType.Create;
+                return SqlEventType.Create;
             case "UPDATE":
-                return EntityEventType.Update;
+                return SqlEventType.Update;
             case "DELETE":
-                return EntityEventType.Delete;
+                return SqlEventType.Delete;
             default:
-                throw new InvalidProgramStateException($"Unknown entity event log event type: {type}");
+                throw new InvalidProgramStateException($"Unknown sql eventLog event type: {type}");
             }
         }
 
-        private readonly IEntityStorage<EventLogEntity> eventLogEntityStorage;
+        private readonly ISqlStorage<EventLogStorageElement> eventLogSqlStorage;
 
         [NotNull]
         private readonly string entityTypeName;

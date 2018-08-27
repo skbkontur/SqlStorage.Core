@@ -13,10 +13,10 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
 {
     [UsedImplicitly]
-    public class EntityStorage<T> : IEntityStorage<T>
-        where T : class, IIdentifiableEntity
+    public class SqlStorage<T> : ISqlStorage<T>
+        where T : class, IIdentifiableSqlEntity
     {
-        public EntityStorage(Func<EntitiesDatabaseContext> createDbContext)
+        public SqlStorage(Func<SqlDatabaseContext> createDbContext)
         {
             this.createDbContext = createDbContext;
         }
@@ -205,6 +205,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Storage
             }
         }
 
-        private readonly Func<EntitiesDatabaseContext> createDbContext;
+        private readonly Func<SqlDatabaseContext> createDbContext;
     }
 }

@@ -8,9 +8,9 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 {
-    public class EntitesStorageTimeRepository
+    public class SqlStorageTimeRepository
     {
-        public EntitesStorageTimeRepository(Func<EntitiesDatabaseContext> createContext)
+        public SqlStorageTimeRepository(Func<SqlDatabaseContext> createContext)
         {
             this.createContext = createContext;
         }
@@ -21,7 +21,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
             {
                 return DateTime.SpecifyKind(
                     context
-                        .Query<DateTimeEntity>()
+                        .Query<DateTimeStorageElement>()
                         .FromSql("SELECT current_timestamp at time zone 'UTC' as \"Value\"")
                         .First()
                         .Value,
@@ -29,6 +29,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
             }
         }
 
-        private readonly Func<EntitiesDatabaseContext> createContext;
+        private readonly Func<SqlDatabaseContext> createContext;
     }
 }

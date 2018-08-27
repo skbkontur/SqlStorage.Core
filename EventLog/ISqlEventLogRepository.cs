@@ -6,10 +6,10 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 {
-    public interface IEntitiesEventLogRepository<TEntity> where TEntity : IIdentifiableEntity
+    public interface ISqlEventLogRepository<TEntity> where TEntity : IIdentifiableSqlEntity
     {
         [NotNull, ItemNotNull]
-        EntityEvent<TEntity>[] GetEvents(long fromOffsetExclusive, long toOffsetInclusive, int limit);
+        SqlEvent<TEntity>[] GetEvents(long fromOffsetExclusive, long toOffsetInclusive, int limit);
 
         int GetCount(long fromOffsetExclusive, long toOffsetInclusive);
 

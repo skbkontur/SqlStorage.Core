@@ -2,9 +2,9 @@
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext
 {
-    public class DatabaseConnectionProvider
+    public class SqlConnectionProvider
     {
-        public DatabaseConnectionProvider([NotNull] string connectionString)
+        public SqlConnectionProvider([NotNull] string connectionString)
         {
             ConnectionString = connectionString;
         }

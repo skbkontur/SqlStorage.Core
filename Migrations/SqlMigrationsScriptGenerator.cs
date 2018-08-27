@@ -13,9 +13,9 @@ using SKBKontur.Catalogue.Objects;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
 {
-    public class EntitiesMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
+    public class SqlMigrationsScriptGenerator : NpgsqlMigrationsSqlGenerator
     {
-        public EntitiesMigrationsSqlGenerator([NotNull] MigrationsSqlGeneratorDependencies dependencies)
+        public SqlMigrationsScriptGenerator([NotNull] MigrationsSqlGeneratorDependencies dependencies)
             : base(dependencies)
         {
         }
@@ -26,18 +26,18 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
             [NotNull] MigrationCommandListBuilder builder,
             bool terminate)
         {
-            var shouldCreateTrigger = operation[EdiEntityAnnotationsNames.EventLogTrigger] is true;
+            var shouldCreateTrigger = operation[SqlAnnotationsNames.EventLogTrigger] is true;
 
             base.Generate(operation, model, builder, terminate : !shouldCreateTrigger);
 
             if (shouldCreateTrigger)
             {
-                var eventLogEntity = model?.FindEntityType(typeof(EventLogEntity));
+                var eventLogEntity = model?.FindEntityType(typeof(EventLogStorageElement));
                 if (eventLogEntity == null)
-                    throw new InvalidProgramStateException("Event log entity not found in model.");
+                    throw new InvalidProgramStateException($"{nameof(EventLogStorageElement)} not found in model.");
                 var eventLogTableName = eventLogEntity.Relational().TableName;
                 if (string.IsNullOrEmpty(eventLogTableName))
-                    throw new InvalidProgramStateException($"Event log table name not found. Event log model: {eventLogEntity.ToDebugString(singleLine : false)}");
+                    throw new InvalidProgramStateException($"{nameof(EventLogStorageElement)} table name not found. Event log model: {eventLogEntity.ToDebugString(singleLine : false)}");
                 AppendTriggerCreation(operation, builder, eventLogTableName);
             }
 

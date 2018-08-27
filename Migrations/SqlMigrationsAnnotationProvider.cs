@@ -10,9 +10,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
 {
-    public class EntitiesMigrationsAnnotationProvider : NpgsqlMigrationsAnnotationProvider
+    public class SqlMigrationsAnnotationProvider : NpgsqlMigrationsAnnotationProvider
     {
-        public EntitiesMigrationsAnnotationProvider([NotNull] MigrationsAnnotationProviderDependencies dependencies)
+        public SqlMigrationsAnnotationProvider([NotNull] MigrationsAnnotationProviderDependencies dependencies)
             : base(dependencies)
         {
         }
@@ -25,8 +25,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
                 yield return annotation;
             }
 
-            if (entityType[EdiEntityAnnotationsNames.EventLogTrigger] is true)
-                yield return new Annotation(EdiEntityAnnotationsNames.EventLogTrigger, true);
+            if (entityType[SqlAnnotationsNames.EventLogTrigger] is true)
+                yield return new Annotation(SqlAnnotationsNames.EventLogTrigger, true);
         }
     }
 }
