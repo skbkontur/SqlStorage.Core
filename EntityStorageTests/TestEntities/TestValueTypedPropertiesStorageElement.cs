@@ -4,7 +4,7 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities
 {
-    public class TestValueTypedPropertiesStorageElement : IdentifiableEntity
+    public class TestValueTypedPropertiesStorageElement : IdentifiableSqlEntity
     {
         public string StringProperty { get; set; }
 

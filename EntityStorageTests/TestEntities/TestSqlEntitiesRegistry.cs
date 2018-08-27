@@ -2,9 +2,9 @@
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities
 {
-    public class TestEntitiesRegistry : EntitiesRegistry
+    public class TestSqlEntitiesRegistry : SqlEntitiesRegistry
     {
-        public TestEntitiesRegistry()
+        public TestSqlEntitiesRegistry()
         {
             RegisterEntityType<TestValueTypedPropertiesStorageElement>();
             RegisterEntityType<TestTimestampElement>();

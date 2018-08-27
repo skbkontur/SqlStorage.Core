@@ -27,10 +27,10 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
                 entities[i].IntProperty = 7;
             }
 
-            entityStorage.CreateOrUpdate(entities);
+            sqlStorage.CreateOrUpdate(entities);
             Expression<Func<TestValueTypedPropertiesStorageElement, bool>> expression = e => e.IntProperty == intConstraint && !(e.BoolProperty ?? true);
-            entityStorage.Delete(expression);
-            var actual = entityStorage.ReadAll();
+            sqlStorage.Delete(expression);
+            var actual = sqlStorage.ReadAll();
             var shouldDeleted = entities.Where(expression.Compile()).Select(x => x.Id).ToArray();
             AssertUnorderedArraysEquality(actual, entities.Where(e => !shouldDeleted.Contains(e.Id)));
         }

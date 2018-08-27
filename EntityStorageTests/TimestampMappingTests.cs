@@ -17,8 +17,8 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         public void TestReadWrite()
         {
             var entity = new TestTimestampElement {Id = Guid.NewGuid(), Timestamp = new Timestamp(new DateTime(2018, 07, 01, 0, 0, 0, DateTimeKind.Utc))};
-            entityStorage.CreateOrUpdate(entity);
-            var actual = entityStorage.TryRead(entity.Id);
+            sqlStorage.CreateOrUpdate(entity);
+            var actual = sqlStorage.TryRead(entity.Id);
             actual.Should().BeEquivalentTo(entity);
         }
     }

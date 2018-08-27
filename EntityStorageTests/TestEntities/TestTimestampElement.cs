@@ -3,7 +3,7 @@ using SKBKontur.Catalogue.Objects;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities
 {
-    public class TestTimestampElement : IdentifiableEntity
+    public class TestTimestampElement : IdentifiableSqlEntity
     {
         public Timestamp Timestamp { get; set; }
     }

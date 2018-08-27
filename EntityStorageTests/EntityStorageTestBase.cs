@@ -15,7 +15,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
 {
     [EdiTestSuite, WithTestEntityStorage]
     public class EntityStorageTestBase<TEntity>
-        where TEntity : class, IIdentifiableEntity, new()
+        where TEntity : class, IIdentifiableSqlEntity, new()
     {
         protected readonly Func<EquivalencyAssertionOptions<TEntity>, EquivalencyAssertionOptions<TEntity>> equivalenceOptionsConfig = EquivalenceOptionsConfig;
 
@@ -40,7 +40,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         }
 
         [Injected]
-        protected readonly IEntityStorage<TEntity> entityStorage;
+        protected readonly ISqlStorage<TEntity> sqlStorage;
 
         private static readonly Fixture fixture = new Fixture();
     }

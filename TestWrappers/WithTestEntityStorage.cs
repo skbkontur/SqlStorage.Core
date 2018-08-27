@@ -15,8 +15,8 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers
     {
         public override sealed void SetUp([NotNull] string suiteName, [NotNull] Assembly testAssembly, [NotNull] IEditableEdiTestContext suiteContext)
         {
-            suiteContext.Container.Configurator.ForAbstraction<EntitiesRegistry>().UseInstances(new TestEntitiesRegistry());
-            using (var dbContext = suiteContext.Container.Create<EntitiesDatabaseContext>())
+            suiteContext.Container.Configurator.ForAbstraction<SqlEntitiesRegistry>().UseInstances(new TestSqlEntitiesRegistry());
+            using (var dbContext = suiteContext.Container.Create<SqlDatabaseContext>())
                 dbContext.Database.EnsureCreated();
         }
     }

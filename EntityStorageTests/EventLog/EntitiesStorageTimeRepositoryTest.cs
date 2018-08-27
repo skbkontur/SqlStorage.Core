@@ -17,23 +17,23 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         [Test]
         public void TestGetCurrentTime()
         {
-            Action invocation = () => entitesStorageTimeRepository.GetCurrentStorageTime();
+            Action invocation = () => sqlStorageTimeRepository.GetCurrentStorageTime();
             invocation.Should().NotThrow();
 
-            var currentTime = entitesStorageTimeRepository.GetCurrentStorageTime();
+            var currentTime = sqlStorageTimeRepository.GetCurrentStorageTime();
             currentTime.Kind.Should().Be(DateTimeKind.Utc);
         }
 
         [Test]
         public void TestCurrentTimeIncreasing()
         {
-            var start = entitesStorageTimeRepository.GetCurrentStorageTime();
+            var start = sqlStorageTimeRepository.GetCurrentStorageTime();
             const int timeout = 500;
             Thread.Sleep(500);
-            var end = entitesStorageTimeRepository.GetCurrentStorageTime();
+            var end = sqlStorageTimeRepository.GetCurrentStorageTime();
             end.Subtract(start).Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(timeout));
         }
         [Injected]
-        private readonly EntitesStorageTimeRepository entitesStorageTimeRepository;
+        private readonly SqlStorageTimeRepository sqlStorageTimeRepository;
     }
 }

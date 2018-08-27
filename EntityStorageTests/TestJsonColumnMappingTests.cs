@@ -22,8 +22,8 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
                             StringProperty = "testComplexType",
                         }
                 };
-            entityStorage.CreateOrUpdate(entity);
-            var actual = entityStorage.TryRead(entity.Id);
+            sqlStorage.CreateOrUpdate(entity);
+            var actual = sqlStorage.TryRead(entity.Id);
             actual.Should().BeEquivalentTo(entity);
         }
     }

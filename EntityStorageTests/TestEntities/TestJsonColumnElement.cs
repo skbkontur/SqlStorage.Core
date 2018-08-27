@@ -3,13 +3,13 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.TestEntities
 {
-    public class TestJsonColumnElement : IdentifiableEntity
+    public class TestJsonColumnElement : IdentifiableSqlEntity
     {
         [JsonColumn]
         public TestComplexColumnElement ComplexColumn { get; set; }
     }
 
-    public class TestJsonArrayColumnElement : IdentifiableEntity
+    public class TestJsonArrayColumnElement : IdentifiableSqlEntity
     {
         [JsonColumn]
         public TestComplexColumnElement[] ComplexArrayColumn { get; set; }

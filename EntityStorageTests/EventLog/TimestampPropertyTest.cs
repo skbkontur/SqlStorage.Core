@@ -19,13 +19,13 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         {
             var entity = new TestTimestampElement {Id = Guid.NewGuid(), Timestamp = new Timestamp(new DateTime(2018, 08, 06, 12, 7, 5, DateTimeKind.Utc))};
             var offset = eventLogRepository.GetLastOffset();
-            entityStorage.Create(entity);
+            sqlStorage.Create(entity);
             var events = eventLogRepository.GetEvents(offset, eventLogRepository.GetLastOffset(), 2);
             events.Length.Should().Be(1);
             events.First().EntitySnapshot.Should().BeEquivalentTo(entity);
         }
 
         [Injected]
-        private readonly IEntitiesEventLogRepository<TestTimestampElement> eventLogRepository;
+        private readonly ISqlEventLogRepository<TestTimestampElement> eventLogRepository;
     }
 }

@@ -17,10 +17,10 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests
         public void TestWriteSearchObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            InternalTestWriteAndReadThroughMultipleThreads(entities, entityStorage);
+            InternalTestWriteAndReadThroughMultipleThreads(entities, sqlStorage);
         }
 
-        private static void InternalTestWriteAndReadThroughMultipleThreads(IReadOnlyCollection<TestValueTypedPropertiesStorageElement> objects, IEntityStorage<TestValueTypedPropertiesStorageElement> storage)
+        private static void InternalTestWriteAndReadThroughMultipleThreads(IReadOnlyCollection<TestValueTypedPropertiesStorageElement> objects, ISqlStorage<TestValueTypedPropertiesStorageElement> storage)
         {
             Parallel.ForEach(objects.Batch(objects.Count / 10), batch => batch.ForEach(storage.CreateOrUpdate));
 

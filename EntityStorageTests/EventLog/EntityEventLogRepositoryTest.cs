@@ -21,7 +21,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
     [TestFixture(typeof(TestJsonColumnElement))]
     [TestFixture(typeof(TestJsonArrayColumnElement))]
     public class EntityEventLogRepositoryTest<TEntity> : EntityStorageTestBase<TEntity>
-        where TEntity : class, IIdentifiableEntity, new()
+        where TEntity : class, IIdentifiableSqlEntity, new()
     {
         [EdiSetUp]
         public void SetUp()
@@ -33,22 +33,22 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         public void TestCreateSingleObject()
         {
             var entity = GenerateObjects().First();
-            entityStorage.Create(entity);
+            sqlStorage.Create(entity);
             var events = eventLogRepository.GetEvents(initialOffset, eventLogRepository.GetLastOffset(), 2);
             events.Length.Should().Be(1);
             var entityEvent = events.First();
             entityEvent.EntitySnapshot.Should().BeEquivalentTo(entity, equivalenceOptionsConfig);
-            entityEvent.EventType.Should().Be(EntityEventType.Create);
+            entityEvent.EventType.Should().Be(SqlEventType.Create);
         }
 
         [Test]
         public void TestCreateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            entityStorage.Create(entities);
+            sqlStorage.Create(entities);
             var events = eventLogRepository.GetEvents(initialOffset, eventLogRepository.GetLastOffset(), entities.Length + 1);
             events.Length.Should().Be(entities.Length);
-            events.All(e => e.EventType == EntityEventType.Create).Should().BeTrue();
+            events.All(e => e.EventType == SqlEventType.Create).Should().BeTrue();
             var actualEntities = events.Select(e => e.EntitySnapshot).ToArray();
             AssertUnorderedArraysEquality(actualEntities, entities);
         }
@@ -57,24 +57,24 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         public void TestUpdateSingleObject()
         {
             var entity = GenerateObjects().First();
-            entityStorage.Create(entity);
+            sqlStorage.Create(entity);
             var offset = eventLogRepository.GetLastOffset();
             var updatedEntity = GenerateObjects().First();
             updatedEntity.Id = entity.Id;
-            entityStorage.Update(updatedEntity);
+            sqlStorage.Update(updatedEntity);
 
             var events = eventLogRepository.GetEvents(offset, eventLogRepository.GetLastOffset(), 2);
             events.Length.Should().Be(1);
             var entityEvent = events.First();
             entityEvent.EntitySnapshot.Should().BeEquivalentTo(updatedEntity, equivalenceOptionsConfig);
-            entityEvent.EventType.Should().Be(EntityEventType.Update);
+            entityEvent.EventType.Should().Be(SqlEventType.Update);
         }
 
         [Test]
         public void TestUpdateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            entityStorage.Create(entities);
+            sqlStorage.Create(entities);
             var offset = eventLogRepository.GetLastOffset();
             var updatedEntities = GenerateObjects(testObjectsCount).Select((e, i) =>
                 {
@@ -82,11 +82,11 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
                     return e;
                 }).ToArray();
 
-            entityStorage.Update(updatedEntities);
+            sqlStorage.Update(updatedEntities);
 
             var events = eventLogRepository.GetEvents(offset, eventLogRepository.GetLastOffset(), entities.Length + 1);
             events.Length.Should().Be(entities.Length);
-            events.All(e => e.EventType == EntityEventType.Update).Should().BeTrue();
+            events.All(e => e.EventType == SqlEventType.Update).Should().BeTrue();
             AssertUnorderedArraysEquality(events.Select(e => e.EntitySnapshot), updatedEntities);
         }
 
@@ -94,29 +94,29 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         public void TestDeleteSingleObject()
         {
             var entity = GenerateObjects().First();
-            entityStorage.Create(entity);
+            sqlStorage.Create(entity);
             var offset = eventLogRepository.GetLastOffset();
-            entityStorage.Delete(entity.Id);
+            sqlStorage.Delete(entity.Id);
 
             var events = eventLogRepository.GetEvents(offset, eventLogRepository.GetLastOffset(), 2);
 
             events.Length.Should().Be(1);
             var entityEvent = events.First();
             entityEvent.EntitySnapshot.Should().BeEquivalentTo(entity, equivalenceOptionsConfig);
-            entityEvent.EventType.Should().Be(EntityEventType.Delete);
+            entityEvent.EventType.Should().Be(SqlEventType.Delete);
         }
 
         [Test]
         public void TestDeleteMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            entityStorage.Create(entities);
+            sqlStorage.Create(entities);
             var offset = eventLogRepository.GetLastOffset();
-            entityStorage.Delete(entities.Select(e => e.Id).ToArray());
+            sqlStorage.Delete(entities.Select(e => e.Id).ToArray());
 
             var events = eventLogRepository.GetEvents(offset, eventLogRepository.GetLastOffset(), entities.Length + 1);
             events.Length.Should().Be(entities.Length);
-            events.All(e => e.EventType == EntityEventType.Delete).Should().BeTrue();
+            events.All(e => e.EventType == SqlEventType.Delete).Should().BeTrue();
             AssertUnorderedArraysEquality(events.Select(e => e.EntitySnapshot), entities);
         }
 
@@ -125,8 +125,8 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         {
             var random = new Random(DateTime.Now.Millisecond);
             var initialEntities = GenerateObjects(testObjectsCount).ToArray();
-            entityStorage.Create(initialEntities);
-            var entitiesState = new ConcurrentDictionary<Guid, EntityEventType>();
+            sqlStorage.Create(initialEntities);
+            var entitiesState = new ConcurrentDictionary<Guid, SqlEventType>();
             var offset = eventLogRepository.GetLastOffset();
 
             Parallel.ForEach(initialEntities.Batch(testObjectsCount / 10), batch =>
@@ -139,17 +139,17 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
                         case 0:
                             var updated = GenerateObjects().First();
                             updated.Id = entity.Id;
-                            entityStorage.Update(updated);
-                            entitiesState.TryAdd(entity.Id, EntityEventType.Update);
+                            sqlStorage.Update(updated);
+                            entitiesState.TryAdd(entity.Id, SqlEventType.Update);
                             continue;
                         case 1:
-                            entityStorage.Delete(entity.Id);
-                            entitiesState.TryAdd(entity.Id, EntityEventType.Delete);
+                            sqlStorage.Delete(entity.Id);
+                            entitiesState.TryAdd(entity.Id, SqlEventType.Delete);
                             continue;
                         case 2:
                             var newEntity = GenerateObjects().First();
-                            entityStorage.Create(newEntity);
-                            entitiesState.TryAdd(newEntity.Id, EntityEventType.Create);
+                            sqlStorage.Create(newEntity);
+                            entitiesState.TryAdd(newEntity.Id, SqlEventType.Create);
                             continue;
                         default:
                             continue;
@@ -166,26 +166,26 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
             }
         }
 
-        [Test, AndSqlStorageCleanUp(typeof(EventLogEntity))]
+        [Test, AndSqlStorageCleanUp(typeof(EventLogStorageElement))]
         public void TestGetMaxTimestampForOffset()
         {
             var maxForInitialOffset = eventLogRepository.GetMaxTimestampForOffset(initialOffset);
-            entityStorage.Create(GenerateObjects(testObjectsCount).ToArray());
+            sqlStorage.Create(GenerateObjects(testObjectsCount).ToArray());
             var newOffset = eventLogRepository.GetLastOffset();
             var maxForNewOffset = eventLogRepository.GetMaxTimestampForOffset(newOffset);
 
-            var currentTime = entitesStorageTimeRepository.GetCurrentStorageTime();
+            var currentTime = sqlStorageTimeRepository.GetCurrentStorageTime();
             maxForInitialOffset.Should().BeBefore(maxForNewOffset);
             maxForNewOffset.Should().BeBefore(currentTime);
         }
 
-        [Test, AndSqlStorageCleanUp(typeof(EventLogEntity))]
+        [Test, AndSqlStorageCleanUp(typeof(EventLogStorageElement))]
         public void TestGetLastOffsetForTimestamp()
         {
-            entityStorage.Create(GenerateObjects().First());
+            sqlStorage.Create(GenerateObjects().First());
             var offset = eventLogRepository.GetLastOffset();
-            var now = entitesStorageTimeRepository.GetCurrentStorageTime();
-            entityStorage.Create(GenerateObjects(testObjectsCount).ToArray());
+            var now = sqlStorageTimeRepository.GetCurrentStorageTime();
+            sqlStorage.Create(GenerateObjects(testObjectsCount).ToArray());
 
             eventLogRepository.GetLastOffsetForTimestamp(now).Should().Be(offset);
         }
@@ -195,9 +195,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EntityStorageTests.Ev
         private const int testObjectsCount = 100;
 
         [Injected]
-        private readonly IEntitiesEventLogRepository<TEntity> eventLogRepository;
+        private readonly ISqlEventLogRepository<TEntity> eventLogRepository;
 
         [Injected]
-        private readonly EntitesStorageTimeRepository entitesStorageTimeRepository;
+        private readonly SqlStorageTimeRepository sqlStorageTimeRepository;
     }
 }
