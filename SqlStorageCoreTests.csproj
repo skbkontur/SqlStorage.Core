@@ -25,9 +25,6 @@
     <Reference Include="Catalogue.NUnit.Extensions">
       <HintPath>..\..\Assemblies\Temp\Catalogue.NUnit.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="GroboContainer">
-        <HintPath>..\..\Assemblies\GroboContainer.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\Assemblies\Nunit-2.6.2\nunit.framework.dll</HintPath>
     </Reference>
