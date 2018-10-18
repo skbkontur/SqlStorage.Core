@@ -14,7 +14,7 @@ using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [EdiTestSuite, WithTestSqlStorage]
-    public class SqlStorageTestBase<TEntity>
+    public abstract class SqlStorageTestBase<TEntity>
         where TEntity : class, IIdentifiableSqlEntity, new()
     {
         protected readonly Func<EquivalencyAssertionOptions<TEntity>, EquivalencyAssertionOptions<TEntity>> equivalenceOptionsConfig = EquivalenceOptionsConfig;
