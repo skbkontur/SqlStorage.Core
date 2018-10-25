@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping
+namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
 {
     public class RuntimeValueConverter : ValueConverter
     {

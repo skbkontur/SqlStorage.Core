@@ -8,8 +8,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
+namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
 {
+    [UsedImplicitly]
     public class SqlMigrationsAnnotationProvider : NpgsqlMigrationsAnnotationProvider
     {
         public SqlMigrationsAnnotationProvider([NotNull] MigrationsAnnotationProviderDependencies dependencies)
@@ -21,12 +22,10 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
         public override IEnumerable<IAnnotation> For([NotNull] IEntityType entityType)
         {
             foreach (var annotation in base.For(entityType))
-            {
                 yield return annotation;
-            }
 
-            if (entityType[SqlAnnotationsNames.EventLogTrigger] is true)
-                yield return new Annotation(SqlAnnotationsNames.EventLogTrigger, true);
+            if (entityType[SqlAnnotations.EventLogTrigger] is true)
+                yield return new Annotation(SqlAnnotations.EventLogTrigger, true);
         }
     }
 }

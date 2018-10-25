@@ -11,13 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 using Newtonsoft.Json;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations;
 using SKBKontur.Catalogue.Objects;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping
+namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
 {
     public static class EntityTypeBuilderExtensions
     {
+        private static readonly ValueConverter<Timestamp, long> timestampConverter = new ValueConverter<Timestamp, long>(timestamp => timestamp.Ticks, l => new Timestamp(l));
+
         [NotNull]
         public static EntityTypeBuilder ApplyTimestampConverter([NotNull] this EntityTypeBuilder entityTypeBuilder)
         {
@@ -26,8 +27,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping
                 .ClrType
                 .GetProperties()
                 .Where(pi => pi.CanRead && pi.CanWrite && pi.PropertyType == typeof(Timestamp));
-
-            var timestampConverter = new ValueConverter<Timestamp, long>(timestamp => timestamp.Ticks, l => new Timestamp(l));
 
             foreach (var timestampProperty in timestampProperties)
             {
@@ -66,14 +65,14 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping
                 .Metadata
                 .ClrType
                 .GetProperties()
-                .Where(pi => pi.CanRead && pi.CanWrite && pi.GetCustomAttributes(attributeType, false).Any());
+                .Where(pi => pi.CanRead && pi.CanWrite && pi.GetCustomAttributes(attributeType, inherit : false).Any());
             return jsonColumnProperties;
         }
 
         [NotNull]
         public static EntityTypeBuilder HasEventLogWriteTrigger([NotNull] this EntityTypeBuilder entityTypeBuilder)
         {
-            entityTypeBuilder.Metadata.SetAnnotation(SqlAnnotationsNames.EventLogTrigger, true);
+            entityTypeBuilder.Metadata.SetAnnotation(SqlAnnotations.EventLogTrigger, true);
             return entityTypeBuilder;
         }
 
@@ -82,8 +81,22 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping
         {
             var indexedProperties = ExtractPropertiesMappedWithAttribute<IndexedColumnAttribute>(entityTypeBuilder);
             foreach (var property in indexedProperties)
-            {
                 entityTypeBuilder.HasIndex(property.Name);
+            return entityTypeBuilder;
+        }
+
+        [NotNull]
+        public static EntityTypeBuilder ApplyUniqueConstraints([NotNull] this EntityTypeBuilder entityTypeBuilder)
+        {
+            var uniqueProperties = ExtractPropertiesMappedWithAttribute<UniqueConstraintAttribute>(entityTypeBuilder);
+            var uniqueGroups = uniqueProperties.SelectMany(p => p.GetCustomAttributes(typeof(UniqueConstraintAttribute), inherit : false)
+                                                                 .Cast<UniqueConstraintAttribute>()
+                                                                 .Select(a => (GroupName: a.GroupName ?? p.Name, a.Order, PropertyName: p.Name)))
+                                               .OrderBy(t => t.Order)
+                                               .GroupBy(t => t.GroupName);
+            foreach (var uniqueGroup in uniqueGroups)
+            {
+                entityTypeBuilder.HasIndex(uniqueGroup.Select(g => g.PropertyName).ToArray()).IsUnique(unique : true);
             }
             return entityTypeBuilder;
         }

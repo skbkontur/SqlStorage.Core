@@ -4,14 +4,12 @@ using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext;
-
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
+namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
 {
-    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+    [UsedImplicitly]
     public class SqlStorageMigrator
     {
-        public SqlStorageMigrator(Func<SqlDatabaseContext> createDbContext)
+        public SqlStorageMigrator(Func<SqlDbContext> createDbContext)
         {
             this.createDbContext = createDbContext;
         }
@@ -19,11 +17,9 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Migrations
         public void Migrate()
         {
             using (var context = createDbContext())
-            {
                 context.Database.Migrate();
-            }
         }
 
-        private readonly Func<SqlDatabaseContext> createDbContext;
+        private readonly Func<SqlDbContext> createDbContext;
     }
 }

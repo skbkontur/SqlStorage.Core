@@ -7,18 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
 using SKBKontur.Catalogue.Objects;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 {
     [UsedImplicitly]
-    public class SqlEventLogRepository<TEntity> : ISqlEventLogRepository<TEntity>
-        where TEntity : IIdentifiableSqlEntity
+    public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
+        where TEntity : ISqlEntity<TKey>
     {
-        public SqlEventLogRepository(ISqlStorage<EventLogStorageElement> eventLogSqlStorage, Func<SqlDatabaseContext> createDbContext)
+        public SqlEventLogRepository(ISqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage, Func<SqlDbContext> createDbContext)
         {
             this.eventLogSqlStorage = eventLogSqlStorage;
             var entityType = typeof(TEntity);
@@ -26,7 +23,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
         }
 
         [NotNull]
-        private static string GetEventLogEntityTypeName([NotNull] Func<SqlDatabaseContext> createDbContext, [NotNull] Type entityType)
+        private static string GetEventLogEntityTypeName([NotNull] Func<SqlDbContext> createDbContext, [NotNull] Type entityType)
         {
             using (var context = createDbContext())
             {
@@ -38,65 +35,34 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
         }
 
         [NotNull, ItemNotNull]
-        public SqlEvent<TEntity>[] GetEvents(long fromOffsetExclusive, long toOffsetInclusive, int limit)
+        public SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit)
         {
             return eventLogSqlStorage
                 .Find(
-                    e => e.Offset > fromOffsetExclusive
-                         && e.Offset <= toOffsetInclusive
-                         && e.EntityType == entityTypeName,
+                    e => e.Offset > fromOffsetExclusive && e.EntityType == entityTypeName,
                     e => e.Offset,
                     limit)
                 .Select(BuildEntityEvent)
                 .ToArray();
         }
 
-        public int GetCount(long fromOffsetExclusive, long toOffsetInclusive)
-        {
-            return eventLogSqlStorage
-                .GetCount(
-                    e => e.Offset > fromOffsetExclusive
-                         && e.Offset <= toOffsetInclusive
-                         && e.EntityType == entityTypeName);
-        }
-
-        public long GetLastOffset()
-        {
-            return eventLogSqlStorage.GetMaxValue(
-                e => e.Offset,
-                filter : e => e.EntityType == entityTypeName);
-        }
-
-        public long GetLastOffsetForTimestamp(DateTime timestamp)
-        {
-            return eventLogSqlStorage.GetMaxValue(
-                e => e.Offset,
-                filter : e => e.Timestamp <= timestamp && e.EntityType == entityTypeName);
-        }
-
-        public DateTime GetMaxTimestampForOffset(long offset)
-        {
-            return eventLogSqlStorage.GetMaxValue(
-                e => e.Timestamp,
-                filter : e => e.Offset <= offset && e.EntityType == entityTypeName);
-        }
-
         [NotNull]
-        private static SqlEvent<TEntity> BuildEntityEvent([NotNull] EventLogStorageElement e)
+        private static SqlEvent<TEntity> BuildEntityEvent([NotNull] SqlEventLogEntry e)
         {
             var entitySnapshot = JsonConvert.DeserializeObject<TEntity>(e.EntityContent);
             return new SqlEvent<TEntity>
                 {
                     EventId = e.Id,
+                    EventType = ParseEntityEventType(e.ModificationType),
                     EventOffset = e.Offset,
-                    EventType = ParseEntityEventType(e.Type),
+                    EventTimestamp = e.Timestamp,
                     EntitySnapshot = entitySnapshot,
                 };
         }
 
-        private static SqlEventType ParseEntityEventType([CanBeNull] string type)
+        private static SqlEventType ParseEntityEventType([CanBeNull] string eventType)
         {
-            switch (type)
+            switch (eventType)
             {
             case "INSERT":
                 return SqlEventType.Create;
@@ -105,11 +71,11 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
             case "DELETE":
                 return SqlEventType.Delete;
             default:
-                throw new InvalidProgramStateException($"Unknown sql eventLog event type: {type}");
+                throw new InvalidProgramStateException($"Unknown sql event type: {eventType}");
             }
         }
 
-        private readonly ISqlStorage<EventLogStorageElement> eventLogSqlStorage;
+        private readonly ISqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage;
 
         [NotNull]
         private readonly string entityTypeName;

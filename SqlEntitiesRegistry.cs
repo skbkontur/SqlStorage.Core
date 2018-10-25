@@ -3,20 +3,18 @@ using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
-
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.DatabaseContext
+namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
     public abstract class SqlEntitiesRegistry
     {
-        protected void RegisterEntityType<T>()
-            where T : IIdentifiableSqlEntity
+        protected void RegisterEntityType<T, TKey>()
+            where T : ISqlEntity<TKey>
         {
             sqlEntityTypes.Add(typeof(T));
         }
 
-        [NotNull]
-        public IEnumerable<Type> GetEntitesTypes()
+        [NotNull, ItemNotNull]
+        public IEnumerable<Type> GetEntityTypes()
         {
             return sqlEntityTypes;
         }
