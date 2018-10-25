@@ -8,7 +8,7 @@ using MoreLinq;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
+using SKBKontur.Catalogue.EDI.SqlStorageCore;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
 using SKBKontur.Catalogue.Linq;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
@@ -16,7 +16,7 @@ using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
-    public class ReadWriteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement>
+    public class ReadWriteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement, Guid>
     {
         [Test]
         public void TestReadWriteSingleObject()
@@ -91,17 +91,17 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
         public void TestCreateSingleObject()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.Create(entity);
+            sqlStorage.CreateOrUpdate(entity);
             sqlStorage.TryRead(entity.Id)
-                         .Should()
-                         .BeEquivalentTo(entity, equivalenceOptionsConfig);
+                      .Should()
+                      .BeEquivalentTo(entity, equivalenceOptionsConfig);
         }
 
         [Test]
         public void TestCreateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.Create(entities);
+            sqlStorage.CreateOrUpdate(entities);
             var actualEntities = sqlStorage.TryRead(entities.Select(e => e.Id).ToArray());
             AssertUnorderedArraysEquality(actualEntities, entities);
         }
@@ -110,60 +110,46 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
         public void TestRecreateSingleObject()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.Create(entity);
-            Action repeatCreation = () => sqlStorage.Create(entity);
-            repeatCreation.Should().Throw<Exception>();
+            sqlStorage.CreateOrUpdate(entity);
+            Action repeatCreation = () => sqlStorage.CreateOrUpdate(entity);
+            repeatCreation.Should().NotThrow();
+            sqlStorage.ReadAll().Length.Should().Be(1);
         }
 
         [Test]
         public void TestRecreateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.Create(entities);
-            Action repeatCreation = () => sqlStorage.Create(entities);
-            repeatCreation.Should().Throw<Exception>();
+            sqlStorage.CreateOrUpdate(entities);
+            Action repeatCreation = () => sqlStorage.CreateOrUpdate(entities);
+            repeatCreation.Should().NotThrow();
+            sqlStorage.ReadAll().Length.Should().Be(entities.Length);
         }
 
         [Test]
         public void TestUpdateSingleObject()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.Create(entity);
+            sqlStorage.CreateOrUpdate(entity);
             entity.IntProperty++;
-            sqlStorage.Update(entity);
+            sqlStorage.CreateOrUpdate(entity);
             sqlStorage.TryRead(entity.Id)
-                         .Should()
-                         .BeEquivalentTo(entity, equivalenceOptionsConfig);
+                      .Should()
+                      .BeEquivalentTo(entity, equivalenceOptionsConfig);
         }
 
         [Test]
         public void TestUpdateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.Create(entities);
+            sqlStorage.CreateOrUpdate(entities);
             foreach (var entity in entities)
             {
                 entity.IntProperty++;
             }
-            sqlStorage.Update(entities);
+            sqlStorage.CreateOrUpdate(entities);
             var actualEntities = sqlStorage.TryRead(entities.Select(e => e.Id).ToArray());
             AssertUnorderedArraysEquality(actualEntities, entities);
-        }
-
-        [Test]
-        public void TestUpdateNonExistingSingleObject()
-        {
-            var entity = GenerateObjects().First();
-            Action update = () => sqlStorage.Update(entity);
-            update.Should().Throw<Exception>();
-        }
-
-        [Test]
-        public void TestUpdateNonExistingMultipleObjects()
-        {
-            var entities = GenerateObjects(testObjectsCount).ToArray();
-            Action update = () => sqlStorage.Update(entities);
-            update.Should().Throw<Exception>();
         }
 
         [Test]
@@ -228,9 +214,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             allActualObjects.Should().NotContain(objectsToDelete);
         }
 
-        private static void InternalTestWriteAndDeleteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, TestValueTypedPropertiesStorageElement[] objectsToDelete, ISqlStorage<TestValueTypedPropertiesStorageElement> storage)
+        private static void InternalTestWriteAndDeleteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, TestValueTypedPropertiesStorageElement[] objectsToDelete, ISqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
         {
-            Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(storage.CreateOrUpdate));
+            Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(e => storage.CreateOrUpdate(e)));
             Parallel.ForEach(objectsToDelete.Batch(objectsToDelete.Length / 10), batch => batch.ForEach(x => storage.Delete(new[] {x.Id})));
 
             var actualObjects = objects.Batch(objects.Length / 10)
@@ -242,9 +228,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             AssertUnorderedArraysEquality(actualObjects, objects.Except(objectsToDelete).ToArray());
         }
 
-        private static void InternalTestWriteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, ISqlStorage<TestValueTypedPropertiesStorageElement> storage)
+        private static void InternalTestWriteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, ISqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
         {
-            Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(storage.CreateOrUpdate));
+            Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(e => storage.CreateOrUpdate(e)));
 
             var actualObjects = objects.Batch(objects.Length / 10)
                                        .AsParallel()

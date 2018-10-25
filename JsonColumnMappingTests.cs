@@ -8,7 +8,7 @@ using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
-    public class JsonColumnMappingTests : SqlStorageTestBase<TestJsonColumnElement>
+    public class JsonColumnMappingTests : SqlStorageTestBase<TestJsonColumnElement, Guid>
     {
         [Test]
         public void TestWriteReadSimple()

@@ -1,10 +1,10 @@
 ﻿using System;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
+using SKBKontur.Catalogue.EDI.SqlStorageCore;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
 {
-    public class TestValueTypedPropertiesStorageElement : IdentifiableSqlEntity
+    public class TestValueTypedPropertiesStorageElement : SqlEntity
     {
         public string StringProperty { get; set; }
 

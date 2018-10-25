@@ -11,7 +11,7 @@ using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [AndSqlStorageCleanUp(typeof(TestTimestampElement))]
-    public class TimestampMappingTests : SqlStorageTestBase<TestTimestampElement>
+    public class TimestampMappingTests : SqlStorageTestBase<TestTimestampElement, Guid>
     {
         [Test]
         public void TestReadWrite()

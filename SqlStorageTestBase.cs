@@ -6,16 +6,15 @@ using AutoFixture;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
+using SKBKontur.Catalogue.EDI.SqlStorageCore;
 using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [EdiTestSuite, WithTestSqlStorage]
-    public abstract class SqlStorageTestBase<TEntity>
-        where TEntity : class, IIdentifiableSqlEntity, new()
+    public abstract class SqlStorageTestBase<TEntity, TKey>
+        where TEntity : class, ISqlEntity<TKey>, new()
     {
         protected readonly Func<EquivalencyAssertionOptions<TEntity>, EquivalencyAssertionOptions<TEntity>> equivalenceOptionsConfig = EquivalenceOptionsConfig;
 
@@ -40,7 +39,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
         }
 
         [Injected]
-        protected readonly ISqlStorage<TEntity> sqlStorage;
+        protected readonly ISqlStorage<TEntity, TKey> sqlStorage;
 
         private readonly Fixture fixture = new Fixture();
     }

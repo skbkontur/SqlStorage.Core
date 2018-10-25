@@ -1,10 +1,9 @@
 ﻿using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.Catalogue.Objects;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
 {
-    public class TestTimestampElement : SqlEntity
+    public class TestBatchStorageElement: SqlEntity
     {
-        public Timestamp Timestamp { get; set; }
+        public string Value { get; set; }
     }
 }

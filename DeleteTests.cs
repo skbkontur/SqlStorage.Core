@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Linq.Expressions;
 
+using FluentAssertions;
+
 using NUnit.Framework;
 
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
@@ -10,12 +12,12 @@ using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
     [AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
-    public class DeleteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement>
+    public class DeleteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement, Guid>
     {
         [Test]
         public void DeleteByCriterion()
         {
-            var entities = GenerateObjects(count: 10).ToArray();
+            var entities = GenerateObjects(count : 10).ToArray();
             const int intConstraint = -42;
             for (var i = 0; i < entities.Length / 2; i++)
             {
@@ -33,6 +35,13 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             var actual = sqlStorage.ReadAll();
             var shouldDeleted = entities.Where(expression.Compile()).Select(x => x.Id).ToArray();
             AssertUnorderedArraysEquality(actual, entities.Where(e => !shouldDeleted.Contains(e.Id)));
+        }
+
+        [Test]
+        public void DeleteNonExisting()
+        {
+            Action nonexistentDeletion = () => sqlStorage.Delete(Guid.NewGuid());
+            nonexistentDeletion.Should().NotThrow();
         }
     }
 }

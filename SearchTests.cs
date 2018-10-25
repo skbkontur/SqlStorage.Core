@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -6,12 +7,12 @@ using MoreLinq;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Storage;
+using SKBKontur.Catalogue.EDI.SqlStorageCore;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
-    public class SearchTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement>
+    public class SearchTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement, Guid>
     {
         [Test]
         public void TestWriteSearchObjects()
@@ -20,9 +21,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             InternalTestWriteAndReadThroughMultipleThreads(entities, sqlStorage);
         }
 
-        private static void InternalTestWriteAndReadThroughMultipleThreads(IReadOnlyCollection<TestValueTypedPropertiesStorageElement> objects, ISqlStorage<TestValueTypedPropertiesStorageElement> storage)
+        private static void InternalTestWriteAndReadThroughMultipleThreads(IReadOnlyCollection<TestValueTypedPropertiesStorageElement> objects, ISqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
         {
-            Parallel.ForEach(objects.Batch(objects.Count / 10), batch => batch.ForEach(storage.CreateOrUpdate));
+            Parallel.ForEach(objects.Batch(objects.Count / 10), batch => batch.ForEach(e => storage.CreateOrUpdate(e)));
 
             var objectsCaptured = objects;
             objects.Batch(objects.Count / 10)

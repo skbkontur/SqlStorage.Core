@@ -1,9 +1,9 @@
-﻿using SKBKontur.Catalogue.EDI.SqlStorageCore.Entities;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Mapping;
+﻿using SKBKontur.Catalogue.EDI.SqlStorageCore;
+using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
 {
-    public class TestJsonColumnElement : IdentifiableSqlEntity
+    public class TestJsonColumnElement : SqlEntity
     {
         [JsonColumn]
         public TestComplexColumnElement ComplexColumn { get; set; }
