@@ -47,10 +47,12 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             var oldId = entity.Id;
             entity.Id = Guid.NewGuid();
             entity.StringValue = Guid.NewGuid().ToString();
-            sqlStorage.CreateOrUpdate(entity, e => new {e.SomeId1, e.SomeId2});
+            sqlStorage.CreateOrUpdate(entity, e => new {e.SomeId1, e.SomeId2}, (db, ins) => new TestUpsertSqlEntry {Id = db.Id, SomeId1 = db.SomeId1, SomeId2 = db.SomeId2, StringValue = ins.StringValue});
             var actual = sqlStorage.ReadAll();
             actual.Length.Should().Be(1);
-            actual.First().Id.Should().Be(oldId);
+            var actualEntity = actual.First();
+            actualEntity.Id.Should().Be(oldId);
+            actualEntity.StringValue.Should().Be(entity.StringValue);
         }
 
         [Test]
