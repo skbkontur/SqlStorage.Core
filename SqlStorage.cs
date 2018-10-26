@@ -2,9 +2,6 @@
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-
-using FlexLabs.EntityFrameworkCore.Upsert;
 
 using JetBrains.Annotations;
 
@@ -36,6 +33,9 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         [NotNull, ItemNotNull]
         public TEntry[] TryRead([NotNull] TKey[] ids)
         {
+            if (!ids.Any())
+                return new TEntry[0];
+
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArray());
         }
 
@@ -45,26 +45,38 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArray());
         }
 
-        public void CreateOrUpdate([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null)
+        public void CreateOrUpdate([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
         {
             WithDbContext(context =>
                 {
-                    var upsertCommandBuilder = context.Upsert(entity).On(onExpression ?? (e => e.Id)).UpdateExcludeColumns(e => e.Id);
+                    var upsertCommandBuilder = context.Upsert(entity).On(onExpression ?? (e => e.Id));
+                    if (whenMatched != null)
+                    {
+                        upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                    }
                     upsertCommandBuilder.Run();
                 });
         }
 
-        public void CreateOrUpdate([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null)
+        public void CreateOrUpdate([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
         {
+            if (!entities.Any())
+                return;
             WithDbContext(context =>
                 {
-                    var upsertTasks = entities.Select(entity => context.Upsert(entity).On(onExpression ?? (e => e.Id)).UpdateExcludeColumns(e => e.Id).RunAsync()).ToArray();
-                    Task.WaitAll(upsertTasks);
+                    var upsertCommandBuilder = context.UpsertRange(entities).On(onExpression ?? (e => e.Id));
+                    if (whenMatched != null)
+                    {
+                        upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                    }
+                    upsertCommandBuilder.Run();
                 });
         }
 
         public void Delete([NotNull] TKey[] ids)
         {
+            if (!ids.Any())
+                return;
             InTransaction(context =>
                 {
                     var entities = context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArray();
