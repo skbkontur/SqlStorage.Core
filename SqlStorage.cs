@@ -7,6 +7,8 @@ using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 
+using MoreLinq;
+
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
     [UsedImplicitly]
@@ -64,12 +66,17 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 return;
             WithDbContext(context =>
                 {
-                    var upsertCommandBuilder = context.UpsertRange(entities).On(onExpression ?? (e => e.Id));
-                    if (whenMatched != null)
-                    {
-                        upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
-                    }
-                    upsertCommandBuilder.Run();
+                    // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
+                    entities.Batch(1000)
+                            .ForEach(batch =>
+                                {
+                                    var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
+                                    if (whenMatched != null)
+                                    {
+                                        upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                                    }
+                                    upsertCommandBuilder.Run();
+                                });
                 });
         }
 

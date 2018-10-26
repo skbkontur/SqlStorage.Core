@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Linq.Expressions;
 
 using JetBrains.Annotations;
 
@@ -37,13 +39,16 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
         [NotNull, ItemNotNull]
         public SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit)
         {
-            return eventLogSqlStorage
-                .Find(
-                    e => e.Offset > fromOffsetExclusive && e.EntityType == entityTypeName,
-                    e => e.Offset,
-                    limit)
-                .Select(BuildEntityEvent)
-                .ToArray();
+            if (fromOffsetExclusive.HasValue && fromOffsetExclusive.Value < 0)
+                throw new ArgumentException($"{nameof(fromOffsetExclusive)} must be non-negative number", nameof(fromOffsetExclusive));
+
+            Expression<Func<SqlEventLogEntry, bool>> searchCriterion;
+            if (fromOffsetExclusive.HasValue)
+                searchCriterion = e => e.Offset > fromOffsetExclusive && e.EntityType == entityTypeName;
+            else
+                searchCriterion = e => e.EntityType == entityTypeName;
+
+            return eventLogSqlStorage.Find(searchCriterion, e => e.Offset, limit).Select(BuildEntityEvent).ToArray();
         }
 
         [NotNull]
