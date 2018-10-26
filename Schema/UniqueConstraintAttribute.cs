@@ -9,6 +9,10 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = false)]
     public class UniqueConstraintAttribute : Attribute
     {
+        public UniqueConstraintAttribute()
+        {
+        }
+
         public UniqueConstraintAttribute([CanBeNull] string groupName, int order)
         {
             GroupName = groupName;
