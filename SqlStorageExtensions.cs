@@ -17,7 +17,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         public static T FindSingleOrDefault<T, TKey>([NotNull] this ISqlStorage<T, TKey> storage, [NotNull] Expression<Func<T, bool>> criterion)
             where T : class, ISqlEntity<TKey>
         {
-            var searchResult = storage.Find(criterion);
+            var searchResult = storage.Find(criterion, 2);
             if (searchResult.Length > 1)
             {
                 var criterionReadable = criterion.ToSimplifiedExpression().Expression.ToReadableString();

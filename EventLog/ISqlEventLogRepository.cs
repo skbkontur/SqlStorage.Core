@@ -6,5 +6,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
     {
         [NotNull, ItemNotNull]
         SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit);
+
+        int GetEventsCount(long? fromOffsetExclusive);
     }
 }

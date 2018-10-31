@@ -26,7 +26,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         void Delete([NotNull] Expression<Func<TEntry, bool>> criterion);
 
         [NotNull, ItemNotNull]
-        TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion);
+        TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion, int limit);
 
         [NotNull, ItemNotNull]
         TEntry[] Find<TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit);

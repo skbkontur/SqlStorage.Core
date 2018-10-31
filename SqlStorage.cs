@@ -122,9 +122,9 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         }
 
         [NotNull, ItemNotNull]
-        public TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion)
+        public TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion, int limit)
         {
-            return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).ToArray());
+            return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArray());
         }
 
         [NotNull, ItemNotNull]

@@ -19,6 +19,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
         public SqlEventLogRepository(ISqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage, Func<SqlDbContext> createDbContext)
         {
             this.eventLogSqlStorage = eventLogSqlStorage;
+            this.createDbContext = createDbContext;
             var entityType = typeof(TEntity);
             entityTypeName = GetEventLogEntityTypeName(createDbContext, entityType);
         }
@@ -48,6 +49,19 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
                 searchCriterion = e => e.EntityType == entityTypeName;
 
             return eventLogSqlStorage.Find(searchCriterion, e => e.Offset, limit).Select(BuildEntityEvent).ToArray();
+        }
+
+        public int GetEventsCount(long? fromOffsetExclusive)
+        {
+            using (var context = createDbContext())
+            {
+                Expression<Func<SqlEventLogEntry, bool>> predicate;
+                if (fromOffsetExclusive.HasValue)
+                    predicate = e => e.Offset > fromOffsetExclusive.Value && e.EntityType == entityTypeName;
+                else
+                    predicate = e => e.EntityType == entityTypeName;
+                return context.Set<SqlEventLogEntry>().Count(predicate);
+            }
         }
 
         [NotNull]
@@ -80,6 +94,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
         }
 
         private readonly ISqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage;
+        private readonly Func<SqlDbContext> createDbContext;
 
         [NotNull]
         private readonly string entityTypeName;
