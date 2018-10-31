@@ -46,6 +46,16 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
         }
 
         [Test]
+        public void TestReadWithNoStartOffset()
+        {
+            var entities = GenerateObjects(2).ToArray();
+            sqlStorage.CreateOrUpdate(entities);
+            var events = eventLogRepository.GetEvents(fromOffsetExclusive : null, int.MaxValue);
+            events.Length.Should().Be(2);
+            AssertUnorderedArraysEquality(events.Select(e => e.EntitySnapshot).ToArray(), entities);
+        }
+
+        [Test]
         public void TestCreateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
@@ -207,6 +217,21 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
                               SqlEventType.Delete
                           },
                       options => options.WithStrictOrdering());
+        }
+
+        [Test]
+        public void TestGetEventsCount()
+        {
+            const int entitiesCount = 5;
+            var entities = GenerateObjects(entitiesCount).ToArray();
+            eventLogRepository.GetEventsCount(fromOffsetExclusive : null).Should().Be(0);
+
+            sqlStorage.CreateOrUpdate(entities);
+            var events = eventLogRepository.GetEvents(null, entitiesCount);
+
+            eventLogRepository.GetEventsCount(fromOffsetExclusive : null).Should().Be(entitiesCount);
+            eventLogRepository.GetEventsCount(fromOffsetExclusive : events[1].EventOffset).Should().Be(3);
+            eventLogRepository.GetEventsCount(fromOffsetExclusive : events.Last().EventOffset + 1000).Should().Be(0);
         }
 
         private long GetLastOffset()
