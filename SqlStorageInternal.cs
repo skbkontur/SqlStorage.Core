@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 using MoreLinq;
 
+using Npgsql;
+
+using SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions;
+
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
     internal class SqlStorageInternal<TEntry, TKey> : ISqlStorage<TEntry, TKey>
@@ -42,36 +46,49 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 
         public void CreateOrUpdate([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
         {
-            WithDbContext(context =>
-                {
-                    var upsertCommandBuilder = context.Upsert(entity).On(onExpression ?? (e => e.Id));
-                    if (whenMatched != null)
+            try
+            {
+                WithDbContext(context =>
                     {
-                        upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
-                    }
-                    upsertCommandBuilder.Run();
-                });
+                        var upsertCommandBuilder = context.Upsert(entity).On(onExpression ?? (e => e.Id));
+                        if (whenMatched != null)
+                        {
+                            upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                        }
+                        upsertCommandBuilder.Run();
+                    });
+            }
+            catch (PostgresException exception)
+            {
+                throw ToSqlStorageException(exception);
+            }
         }
 
         public void CreateOrUpdate([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
         {
             if (!entities.Any())
                 return;
-
-            WithDbContext(context =>
-                {
-                    // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
-                    entities.Batch(1000)
-                            .ForEach(batch =>
-                                {
-                                    var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
-                                    if (whenMatched != null)
+            try
+            {
+                WithDbContext(context =>
+                    {
+                        // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
+                        entities.Batch(1000)
+                                .ForEach(batch =>
                                     {
-                                        upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
-                                    }
-                                    upsertCommandBuilder.Run();
-                                });
-                });
+                                        var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
+                                        if (whenMatched != null)
+                                        {
+                                            upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                                        }
+                                        upsertCommandBuilder.Run();
+                                    });
+                    });
+            }
+            catch (PostgresException exception)
+            {
+                throw ToSqlStorageException(exception);
+            }
         }
 
         public void Delete([NotNull, ItemNotNull] TKey[] ids)
@@ -142,6 +159,12 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                     return func(context);
             return func(createDbContext());
         }
+
+        [NotNull]
+        private static SqlStorageException ToSqlStorageException([NotNull] PostgresException postgresException)
+            => PostgresExceptionRecognizer.TryRecognizeException(postgresException, out var sqlStorageRecognizedException)
+                   ? sqlStorageRecognizedException
+                   : new UnknownSqlStorageException(postgresException);
 
         private readonly Func<SqlDbContext> createDbContext;
         private readonly bool disposeContextOnOperationFinish;
