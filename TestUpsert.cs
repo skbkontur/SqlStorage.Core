@@ -5,6 +5,7 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
+using SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
@@ -37,6 +38,18 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             var actual = sqlStorage.ReadAll();
             actual.Length.Should().Be(2);
             AssertUnorderedArraysEquality(actual, new[] {entity1, entity2});
+        }
+
+        [Test]
+        public void TestUpsertOnUniqueConstraintThrows()
+        {
+            var entity1 = GenerateObjects().First();
+            var entity2 = GenerateObjects().First();
+            (entity2.SomeId1, entity2.SomeId2) = (entity1.SomeId1, entity1.SomeId2);
+
+            Action creation = () => sqlStorage.CreateOrUpdate(new[] {entity1, entity2});
+
+            creation.Should().Throw<UniqueViolationException>();
         }
 
         [Test]
