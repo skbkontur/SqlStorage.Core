@@ -214,7 +214,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             allActualObjects.Should().NotContain(objectsToDelete);
         }
 
-        private static void InternalTestWriteAndDeleteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, TestValueTypedPropertiesStorageElement[] objectsToDelete, ISqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
+        private static void InternalTestWriteAndDeleteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, TestValueTypedPropertiesStorageElement[] objectsToDelete, IConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
         {
             Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(e => storage.CreateOrUpdate(e)));
             Parallel.ForEach(objectsToDelete.Batch(objectsToDelete.Length / 10), batch => batch.ForEach(x => storage.Delete(new[] {x.Id})));
@@ -228,7 +228,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             AssertUnorderedArraysEquality(actualObjects, objects.Except(objectsToDelete).ToArray());
         }
 
-        private static void InternalTestWriteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, ISqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
+        private static void InternalTestWriteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, IConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
         {
             Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(e => storage.CreateOrUpdate(e)));
 

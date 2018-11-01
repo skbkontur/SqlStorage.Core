@@ -39,7 +39,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
         }
 
         [Injected]
-        protected readonly ISqlStorage<TEntity, TKey> sqlStorage;
+        protected readonly IConcurrentSqlStorage<TEntity, TKey> sqlStorage;
 
         private readonly Fixture fixture = new Fixture();
     }

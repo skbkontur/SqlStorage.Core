@@ -21,7 +21,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             InternalTestWriteAndReadThroughMultipleThreads(entities, sqlStorage);
         }
 
-        private static void InternalTestWriteAndReadThroughMultipleThreads(IReadOnlyCollection<TestValueTypedPropertiesStorageElement> objects, ISqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
+        private static void InternalTestWriteAndReadThroughMultipleThreads(IReadOnlyCollection<TestValueTypedPropertiesStorageElement> objects, IConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
         {
             Parallel.ForEach(objects.Batch(objects.Count / 10), batch => batch.ForEach(e => storage.CreateOrUpdate(e)));
 
