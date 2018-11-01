@@ -16,7 +16,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
     public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
         where TEntity : ISqlEntity<TKey>
     {
-        public SqlEventLogRepository(ISqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage, Func<SqlDbContext> createDbContext)
+        public SqlEventLogRepository(IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage, Func<SqlDbContext> createDbContext)
         {
             this.eventLogSqlStorage = eventLogSqlStorage;
             this.createDbContext = createDbContext;
@@ -93,7 +93,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
             }
         }
 
-        private readonly ISqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage;
+        private readonly IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage;
         private readonly Func<SqlDbContext> createDbContext;
 
         [NotNull]

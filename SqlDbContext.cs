@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Logging;
 
 using Npgsql;
 
@@ -12,9 +13,10 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
     public sealed class SqlDbContext : DbContext
     {
-        public SqlDbContext([NotNull] ISqlDbContextSettings settings)
+        public SqlDbContext([NotNull] ISqlDbContextSettings settings, [NotNull] ILoggerFactory loggerFactory)
         {
             this.settings = settings;
+            this.loggerFactory = loggerFactory;
         }
 
         protected override void OnConfiguring([NotNull] DbContextOptionsBuilder optionsBuilder)
@@ -34,6 +36,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 });
             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqlMigrationsScriptGenerator>();
             optionsBuilder.ReplaceService<IMigrationsAnnotationProvider, SqlMigrationsAnnotationProvider>();
+            optionsBuilder.UseLoggerFactory(loggerFactory);
         }
 
         protected override void OnModelCreating([NotNull] ModelBuilder modelBuilder)
@@ -68,5 +71,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         }
 
         private readonly ISqlDbContextSettings settings;
+
+        [NotNull]
+        private readonly ILoggerFactory loggerFactory;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Linq.Expressions;
 
 using JetBrains.Annotations;
@@ -30,7 +29,5 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 
         [NotNull, ItemNotNull]
         TEntry[] Find<TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit);
-
-        void Batch([NotNull] Action<ISqlStorage<TEntry, TKey>> batchAction, IsolationLevel isolationLevel);
     }
 }

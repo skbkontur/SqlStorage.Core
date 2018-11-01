@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -11,29 +10,23 @@ using MoreLinq;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
-    [UsedImplicitly]
-    public class SqlStorage<TEntry, TKey> : ISqlStorage<TEntry, TKey>
+    internal class SqlStorageInternal<TEntry, TKey> : ISqlStorage<TEntry, TKey>
         where TEntry : class, ISqlEntity<TKey>
     {
-        public SqlStorage(Func<SqlDbContext> createDbContext)
-            : this(createDbContext, disposeContextOnOperationFinish : true)
-        {
-        }
-
-        private SqlStorage(Func<SqlDbContext> createDbContext, bool disposeContextOnOperationFinish)
+        public SqlStorageInternal(Func<SqlDbContext> createDbContext, bool disposeContextOnOperationFinish)
         {
             this.createDbContext = createDbContext;
             this.disposeContextOnOperationFinish = disposeContextOnOperationFinish;
         }
 
         [CanBeNull]
-        public TEntry TryRead(TKey id)
+        public TEntry TryRead([NotNull] TKey id)
         {
             return WithDbContext(context => context.Set<TEntry>().Find(id));
         }
 
         [NotNull, ItemNotNull]
-        public TEntry[] TryRead([NotNull] TKey[] ids)
+        public TEntry[] TryRead([NotNull, ItemNotNull] TKey[] ids)
         {
             if (!ids.Any())
                 return new TEntry[0];
@@ -64,6 +57,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         {
             if (!entities.Any())
                 return;
+
             WithDbContext(context =>
                 {
                     // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
@@ -80,11 +74,12 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 });
         }
 
-        public void Delete([NotNull] TKey[] ids)
+        public void Delete([NotNull, ItemNotNull] TKey[] ids)
         {
             if (!ids.Any())
                 return;
-            InTransaction(context =>
+
+            WithDbContext(context =>
                 {
                     var entities = context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArray();
                     if (entities.Any())
@@ -92,12 +87,12 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                         context.Set<TEntry>().RemoveRange(entities);
                         context.SaveChanges();
                     }
-                }, IsolationLevel.Serializable);
+                });
         }
 
-        public void Delete(TKey id)
+        public void Delete([NotNull] TKey id)
         {
-            InTransaction(context =>
+            WithDbContext(context =>
                 {
                     var entity = context.Set<TEntry>().Find(id);
                     if (entity != null)
@@ -105,12 +100,12 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                         context.Set<TEntry>().Remove(entity);
                         context.SaveChanges();
                     }
-                }, IsolationLevel.Serializable);
+                });
         }
 
         public void Delete([NotNull] Expression<Func<TEntry, bool>> criterion)
         {
-            InTransaction(context =>
+            WithDbContext(context =>
                 {
                     var entities = context.Set<TEntry>().AsNoTracking().Where(criterion).ToArray();
                     if (entities.Any())
@@ -118,46 +113,17 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                         context.Set<TEntry>().RemoveRange(entities);
                         context.SaveChanges();
                     }
-                }, IsolationLevel.Serializable);
+                });
         }
 
-        [NotNull, ItemNotNull]
         public TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion, int limit)
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArray());
         }
 
-        [NotNull, ItemNotNull]
         public TEntry[] Find<TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, [NotNull] Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArray());
-        }
-
-        public void Batch([NotNull] Action<ISqlStorage<TEntry, TKey>> batchAction, IsolationLevel isolationLevel)
-        {
-            InTransaction(context =>
-                {
-                    var storage = new SqlStorage<TEntry, TKey>(() => context, disposeContextOnOperationFinish : false);
-                    batchAction(storage);
-                }, isolationLevel);
-        }
-
-        private void InTransaction([NotNull] Action<SqlDbContext> operation, IsolationLevel isolationLevel)
-        {
-            WithDbContext(context =>
-                {
-                    context.Database.CreateExecutionStrategy().Execute(() =>
-                        {
-                            WithDbContext(ctx =>
-                                {
-                                    using (var transaction = ctx.Database.BeginTransaction(isolationLevel))
-                                    {
-                                        operation(ctx);
-                                        transaction.Commit();
-                                    }
-                                });
-                        });
-                });
         }
 
         private void WithDbContext([NotNull] Action<SqlDbContext> action)
