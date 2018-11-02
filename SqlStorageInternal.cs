@@ -14,8 +14,7 @@ using SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
-    internal class SqlStorageInternal<TEntry, TKey> : ISqlStorage<TEntry, TKey>
-        where TEntry : class, ISqlEntity<TKey>
+    internal class SqlStorageInternal : ISqlStorage
     {
         public SqlStorageInternal(Func<SqlDbContext> createDbContext, bool disposeContextOnOperationFinish)
         {
@@ -24,13 +23,15 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         }
 
         [CanBeNull]
-        public TEntry TryRead([NotNull] TKey id)
+        public TEntry TryRead<TEntry, TKey>([NotNull] TKey id)
+            where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().Find(id));
         }
 
         [NotNull, ItemNotNull]
-        public TEntry[] TryRead([NotNull, ItemNotNull] TKey[] ids)
+        public TEntry[] TryRead<TEntry, TKey>([NotNull, ItemNotNull] TKey[] ids)
+            where TEntry : class, ISqlEntity<TKey>
         {
             if (!ids.Any())
                 return new TEntry[0];
@@ -39,12 +40,14 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         }
 
         [NotNull, ItemNotNull]
-        public TEntry[] ReadAll()
+        public TEntry[] ReadAll<TEntry, TKey>()
+            where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArray());
         }
 
-        public void CreateOrUpdate([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+        public void CreateOrUpdate<TEntry, TKey>([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+            where TEntry : class, ISqlEntity<TKey>
         {
             try
             {
@@ -64,7 +67,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
             }
         }
 
-        public void CreateOrUpdate([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+        public void CreateOrUpdate<TEntry, TKey>([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+            where TEntry : class, ISqlEntity<TKey>
         {
             if (!entities.Any())
                 return;
@@ -91,7 +95,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
             }
         }
 
-        public void Delete([NotNull, ItemNotNull] TKey[] ids)
+        public void Delete<TEntry, TKey>([NotNull, ItemNotNull] TKey[] ids)
+            where TEntry : class, ISqlEntity<TKey>
         {
             if (!ids.Any())
                 return;
@@ -107,7 +112,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 });
         }
 
-        public void Delete([NotNull] TKey id)
+        public void Delete<TEntry, TKey>([NotNull] TKey id)
+            where TEntry : class, ISqlEntity<TKey>
         {
             WithDbContext(context =>
                 {
@@ -120,7 +126,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 });
         }
 
-        public void Delete([NotNull] Expression<Func<TEntry, bool>> criterion)
+        public void Delete<TEntry, TKey>([NotNull] Expression<Func<TEntry, bool>> criterion)
+            where TEntry : class, ISqlEntity<TKey>
         {
             WithDbContext(context =>
                 {
@@ -133,12 +140,14 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 });
         }
 
-        public TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion, int limit)
+        public TEntry[] Find<TEntry, TKey>([NotNull] Expression<Func<TEntry, bool>> criterion, int limit)
+            where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArray());
         }
 
-        public TEntry[] Find<TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, [NotNull] Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
+        public TEntry[] Find<TEntry, TKey, TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, [NotNull] Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
+            where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArray());
         }

@@ -5,29 +5,41 @@ using JetBrains.Annotations;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
-    public interface ISqlStorage<TEntry, in TKey>
-        where TEntry : class, ISqlEntity<TKey>
+    public interface ISqlStorage
     {
         [CanBeNull]
-        TEntry TryRead(TKey id);
+        TEntry TryRead<TEntry, TKey>(TKey id)
+            where TEntry : class, ISqlEntity<TKey>;
 
         [NotNull, ItemNotNull]
-        TEntry[] TryRead([NotNull] TKey[] ids);
+        TEntry[] TryRead<TEntry, TKey>([NotNull] TKey[] ids)
+            where TEntry : class, ISqlEntity<TKey>;
 
         [NotNull, ItemNotNull]
-        TEntry[] ReadAll();
+        TEntry[] ReadAll<TEntry, TKey>()
+            where TEntry : class, ISqlEntity<TKey>;
 
-        void CreateOrUpdate([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null);
-        void CreateOrUpdate([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null);
+        void CreateOrUpdate<TEntry, TKey>([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+            where TEntry : class, ISqlEntity<TKey>;
 
-        void Delete([NotNull] TKey[] ids);
-        void Delete(TKey id);
-        void Delete([NotNull] Expression<Func<TEntry, bool>> criterion);
+        void CreateOrUpdate<TEntry, TKey>([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+            where TEntry : class, ISqlEntity<TKey>;
+
+        void Delete<TEntry, TKey>([NotNull] TKey[] ids)
+            where TEntry : class, ISqlEntity<TKey>;
+
+        void Delete<TEntry, TKey>(TKey id)
+            where TEntry : class, ISqlEntity<TKey>;
+
+        void Delete<TEntry, TKey>([NotNull] Expression<Func<TEntry, bool>> criterion)
+            where TEntry : class, ISqlEntity<TKey>;
 
         [NotNull, ItemNotNull]
-        TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion, int limit);
+        TEntry[] Find<TEntry, TKey>([NotNull] Expression<Func<TEntry, bool>> criterion, int limit)
+            where TEntry : class, ISqlEntity<TKey>;
 
         [NotNull, ItemNotNull]
-        TEntry[] Find<TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit);
+        TEntry[] Find<TEntry, TKey, TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
+            where TEntry : class, ISqlEntity<TKey>;
     }
 }
