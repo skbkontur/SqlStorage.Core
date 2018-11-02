@@ -33,10 +33,10 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
                 {
                     sqlStorage.Batch(storage =>
                         {
-                            storage.CreateOrUpdate(expected);
+                            storage.CreateOrUpdate<TestBatchStorageElement, Guid>(expected);
                             updateWaitHandle.Set();
                             deleteWaitHandle.WaitOne();
-                            var actual = storage.TryRead(expected.Id);
+                            var actual = storage.TryRead<TestBatchStorageElement, Guid>(expected.Id);
                             actual.Should().BeEquivalentTo(expected);
                         }, isolationLevel);
                 });
@@ -65,9 +65,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
                 {
                     sqlStorage.Batch(storage =>
                         {
-                            storage.CreateOrUpdate(entity);
+                            storage.CreateOrUpdate<TestBatchStorageElement, Guid>(entity);
                             createWaitHandle.Set();
-                            var actual = storage.TryRead(entity.Id);
+                            var actual = storage.TryRead<TestBatchStorageElement, Guid>(entity.Id);
                             actual.Should().BeEquivalentTo(entity);
                         }, isolationLevel);
                 });
