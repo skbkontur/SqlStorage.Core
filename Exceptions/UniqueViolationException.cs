@@ -4,8 +4,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions
 {
     public sealed class UniqueViolationException : SqlStorageException
     {
-        public UniqueViolationException(string message, string constraint, string sqlState, string details)
-            : base(message, sqlState)
+        public UniqueViolationException(string message, string constraint, string details)
+            : base(message)
         {
             Constraint = constraint;
             Details = details;
