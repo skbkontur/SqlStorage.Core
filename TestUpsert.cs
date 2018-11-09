@@ -53,6 +53,16 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
         }
 
         [Test]
+        public void UpsertEntity_WithoutRequiredValue_Throws()
+        {
+            var entity = GenerateObjects().First();
+            entity.RequiredValue = null;
+
+            Action saving = () => sqlStorage.CreateOrUpdate(entity);
+            saving.Should().Throw<UnknownSqlStorageException>();
+        }
+
+        [Test]
         public void TestUpsertOnCustomExpressionPrimaryKeyNotUpdated()
         {
             var entity = GenerateObjects().First();

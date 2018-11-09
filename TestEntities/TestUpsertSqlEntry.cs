@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 using JetBrains.Annotations;
 
@@ -17,5 +18,8 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
 
         [CanBeNull]
         public string StringValue { get; set; }
+
+        [Required]
+        public string RequiredValue { get; set; }
     }
 }
