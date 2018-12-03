@@ -6,13 +6,14 @@ using AutoFixture;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 
+using GroboContainer.NUnitExtensions;
+
 using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {
-    [EdiTestSuite, WithTestSqlStorage]
+    [GroboTestSuite, WithTestSqlStorage]
     public abstract class SqlStorageTestBase<TEntity, TKey>
         where TEntity : class, ISqlEntity<TKey>, new()
     {

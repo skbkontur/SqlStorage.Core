@@ -3,11 +3,12 @@ using System.Linq;
 
 using FluentAssertions;
 
+using GroboContainer.NUnitExtensions;
+
 using NUnit.Framework;
 
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
 using SKBKontur.Catalogue.Objects;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 

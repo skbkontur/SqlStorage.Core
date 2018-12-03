@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using FluentAssertions;
 
+using GroboContainer.NUnitExtensions;
+
 using Microsoft.EntityFrameworkCore;
 
 using MoreLinq;
@@ -15,7 +17,6 @@ using NUnit.Framework;
 using SKBKontur.Catalogue.EDI.SqlStorageCore;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.Catalogue.NUnit.Extensions.EdiTestMachinery;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
@@ -27,7 +28,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
     public class SqlEventLogRepositoryTest<TEntity, TKey> : SqlStorageTestBase<TEntity, TKey>
         where TEntity : class, ISqlEntity<TKey>, new()
     {
-        [EdiSetUp]
+        [GroboSetUp]
         public void SetUp()
         {
             initialOffset = GetLastOffset();
