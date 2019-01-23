@@ -28,6 +28,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                     Password = settings.Password,
                     Database = settings.Database,
                 }.ToString();
+
             optionsBuilder.UseNpgsql(connectionString, options =>
                 {
                     options.EnableRetryOnFailure(settings.MaxRetryRequestOnFailureCount);
@@ -57,6 +58,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         private void ConfigureEventLog([NotNull] ModelBuilder modelBuilder)
         {
             modelBuilder.HasPostgresExtension("uuid-ossp");
+            modelBuilder.HasDbFunction(() => PostgresFunctions.CurrentTransactionIdsSnapshot());
+            modelBuilder.HasDbFunction(() => PostgresFunctions.SnapshotMinimalTransactionId(default));
 
             var logTypeBuilder = modelBuilder.Entity<SqlEventLogEntry>();
             logTypeBuilder.ApplyTimestampConverter();

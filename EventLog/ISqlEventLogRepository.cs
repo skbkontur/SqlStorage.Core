@@ -5,8 +5,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
     public interface ISqlEventLogRepository<TEntity, TKey> where TEntity : ISqlEntity<TKey>
     {
         [NotNull, ItemNotNull]
-        SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit);
+        SqlEvent<TEntity>[] GetEvents([CanBeNull] long? fromOffsetExclusive, int limit);
 
-        int GetEventsCount(long? fromOffsetExclusive);
+        int GetEventsCount([CanBeNull] long? fromOffsetExclusive);
     }
 }

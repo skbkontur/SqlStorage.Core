@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
 
+using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
 using SKBKontur.Catalogue.Objects;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
@@ -37,31 +38,44 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
         }
 
         [NotNull, ItemNotNull]
-        public SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit)
+        public SqlEvent<TEntity>[] GetEvents([CanBeNull] long? fromOffsetExclusive, int limit)
         {
-            if (fromOffsetExclusive.HasValue && fromOffsetExclusive.Value < 0)
-                throw new ArgumentException($"{nameof(fromOffsetExclusive)} must be non-negative number", nameof(fromOffsetExclusive));
-
-            Expression<Func<SqlEventLogEntry, bool>> searchCriterion;
-            if (fromOffsetExclusive.HasValue)
-                searchCriterion = e => e.Offset > fromOffsetExclusive && e.EntityType == entityTypeName;
-            else
-                searchCriterion = e => e.EntityType == entityTypeName;
-
+            ValidateOffset(fromOffsetExclusive);
+            var searchCriterion = BuildEventsSearchCriterion(fromOffsetExclusive);
             return eventLogSqlStorage.Find(searchCriterion, e => e.Offset, limit).Select(BuildEntityEvent).ToArray();
         }
 
-        public int GetEventsCount(long? fromOffsetExclusive)
+        public int GetEventsCount([CanBeNull] long? fromOffsetExclusive)
         {
+            ValidateOffset(fromOffsetExclusive);
+
             using (var context = createDbContext())
             {
-                Expression<Func<SqlEventLogEntry, bool>> predicate;
-                if (fromOffsetExclusive.HasValue)
-                    predicate = e => e.Offset > fromOffsetExclusive.Value && e.EntityType == entityTypeName;
-                else
-                    predicate = e => e.EntityType == entityTypeName;
+                var predicate = BuildEventsSearchCriterion(fromOffsetExclusive);
                 return context.Set<SqlEventLogEntry>().Count(predicate);
             }
+        }
+
+        [NotNull]
+        private Expression<Func<SqlEventLogEntry, bool>> BuildEventsSearchCriterion([CanBeNull] long? fromOffsetExclusive)
+        {
+            Expression<Func<SqlEventLogEntry, bool>> searchCriterion;
+            if (fromOffsetExclusive.HasValue)
+                searchCriterion = e => e.Offset > fromOffsetExclusive.Value
+                                       && e.EntityType == entityTypeName
+                                       && e.TransactionId < PostgresFunctions.SnapshotMinimalTransactionId(PostgresFunctions.CurrentTransactionIdsSnapshot());
+            else
+                searchCriterion = e => e.EntityType == entityTypeName
+                                       && e.TransactionId < PostgresFunctions.SnapshotMinimalTransactionId(PostgresFunctions.CurrentTransactionIdsSnapshot());
+            return searchCriterion;
+        }
+
+        private void ValidateOffset([CanBeNull] long? offset)
+        {
+            if (offset == null)
+                return;
+            if (offset.Value < 0)
+                throw new ArgumentOutOfRangeException(nameof(offset), offset.Value, "Must be non-negative");
         }
 
         [NotNull]

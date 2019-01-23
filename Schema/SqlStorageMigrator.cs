@@ -37,7 +37,20 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
                     logger.LogCritical($"Database migration failed. Last applied migration: {justAppliedMigration}. Exception: {e}");
 
                     if (justAppliedMigration != lastAppliedMigration)
-                        context.GetService<IMigrator>().Migrate(lastAppliedMigration);
+                    {
+                        logger.LogInformation($"Some migrations were applied. Last just applied migration: {justAppliedMigration}. Starting rollback...");
+                        try
+                        {
+                            context.GetService<IMigrator>().Migrate(lastAppliedMigration);
+                        }
+                        catch (Exception rollbackException)
+                        {
+                            logger.LogCritical($"Rollback to {lastAppliedMigration} failed. Exception: {rollbackException}");
+                            throw;
+                        }
+                    }
+
+                    throw;
                 }
             }
         }

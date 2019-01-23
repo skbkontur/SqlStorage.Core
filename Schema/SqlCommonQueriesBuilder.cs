@@ -14,6 +14,10 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
             return $"to_timestamp({longQuery}::double precision / (10 * 1000 * 1000) - {unixEpochSeconds})";
         }
 
+        public static string CurrentTransactionId() => "txid_current()";
+
+        public static string CurrentTransactionTimestamp() => "transaction_timestamp()";
+
         private const string unixEpochSeconds = "62135596800";
     }
 }

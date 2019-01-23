@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿using System.Linq;
+
+using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -51,13 +53,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
         {
             base.Generate(operation, model, builder);
 
-            var eventLogEntity = FindEventLogEntity(model);
-            if (operation.NewName == eventLogEntity.Relational().TableName)
-            {
-                builder.Append(Dependencies.SqlGenerationHelper.StatementTerminator);
-                AppendCreateOrReplaceWriteToEventLogFunction(builder, eventLogEntity);
-                builder.EndCommand(suppressTransaction : false);
-            }
+            ReplaceWriteToEventLogFunctionIfEventLogTableTouched(model, builder, targetTableName : operation.NewName);
         }
 
         protected override void Generate(
@@ -66,8 +62,24 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
             [NotNull] MigrationCommandListBuilder builder)
         {
             base.Generate(operation, model, builder);
+
+            ReplaceWriteToEventLogFunctionIfEventLogTableTouched(model, builder, targetTableName : operation.Table);
+        }
+
+        protected override void Generate(
+            [NotNull] AddColumnOperation operation,
+            [CanBeNull] IModel model,
+            [NotNull] MigrationCommandListBuilder builder)
+        {
+            base.Generate(operation, model, builder);
+
+            ReplaceWriteToEventLogFunctionIfEventLogTableTouched(model, builder, operation.Table);
+        }
+
+        private void ReplaceWriteToEventLogFunctionIfEventLogTableTouched([CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder, [CanBeNull] string targetTableName)
+        {
             var eventLogEntity = FindEventLogEntity(model);
-            if (operation.Table == eventLogEntity.Relational().TableName)
+            if (targetTableName == eventLogEntity.Relational().TableName)
             {
                 builder.Append(Dependencies.SqlGenerationHelper.StatementTerminator);
                 AppendCreateOrReplaceWriteToEventLogFunction(builder, eventLogEntity);
@@ -75,6 +87,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
             }
         }
 
+        [NotNull]
         private static IEntityType FindEventLogEntity(IModel model)
         {
             var eventLogEntity = model?.FindEntityType(typeof(SqlEventLogEntry));
@@ -93,44 +106,77 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
             var triggerName = $"tr_update_{operation.Name}";
             var tableName = Dependencies.SqlGenerationHelper.DelimitIdentifier(operation.Name, operation.Schema);
 
-            builder.Append($"DROP TRIGGER IF EXISTS {triggerName} ON {tableName}").AppendLine(statementTerminator);
-            builder.AppendLine($"CREATE TRIGGER {triggerName}");
-            builder.AppendLine($"BEFORE INSERT OR UPDATE OR DELETE ON {tableName}");
-            builder.AppendLine("FOR EACH ROW");
-            builder.Append($"EXECUTE PROCEDURE {writeToEventLogFunctionName}()").AppendLine(statementTerminator);
+            builder
+                .Append($"DROP TRIGGER IF EXISTS {triggerName} ON {tableName}").AppendLine(statementTerminator)
+                .AppendLine($"CREATE TRIGGER {triggerName}")
+                .AppendLine($"AFTER INSERT OR UPDATE OR DELETE ON {tableName}")
+                .AppendLine("FOR EACH ROW")
+                .Append($"EXECUTE PROCEDURE {writeToEventLogFunctionName}()").AppendLine(statementTerminator);
         }
 
-        private void AppendCreateOrReplaceWriteToEventLogFunction(MigrationCommandListBuilder builder, IEntityType eventLogEntity)
+        private void AppendCreateOrReplaceWriteToEventLogFunction([NotNull] MigrationCommandListBuilder builder, [NotNull] IEntityType eventLogEntity)
         {
             var statementTerminator = Dependencies.SqlGenerationHelper.StatementTerminator;
             var eventLogTableName = eventLogEntity.Relational().TableName;
 
             if (string.IsNullOrEmpty(eventLogTableName))
                 throw new InvalidProgramStateException($"{nameof(SqlEventLogEntry)} table name not found. Event log model: {eventLogEntity.ToDebugString(singleLine : false)}");
+            const string rowDataVariableName = "data";
 
+            var insertedColumnsMap = GetActiveColumnsMap(eventLogEntity, rowDataVariableName);
+
+            builder
+                .AppendLine($"CREATE OR REPLACE FUNCTION {writeToEventLogFunctionName}()")
+                .AppendLine($"RETURNS TRIGGER AS ${writeToEventLogFunctionName}$")
+                .Append($"DECLARE {rowDataVariableName} json")
+                .AppendLine(statementTerminator)
+                .AppendLine("BEGIN")
+                .AppendLine("IF (TG_OP = 'DELETE') THEN")
+                .Append($"{rowDataVariableName} = row_to_json(OLD)")
+                .AppendLine(statementTerminator)
+                .AppendLine("ELSE")
+                .Append($"{rowDataVariableName} = row_to_json(NEW)")
+                .AppendLine(statementTerminator)
+                .Append("END IF")
+                .AppendLine(statementTerminator)
+                .AppendLine($"INSERT INTO \"{eventLogTableName}\" ({string.Join(", ", insertedColumnsMap.Select(i => $"\"{i.ColumnName}\""))})")
+                .Append($"VALUES ({string.Join(", ", insertedColumnsMap.Select(i => i.ColumnValueExpression))})")
+                .AppendLine(statementTerminator)
+                .AppendLine("IF (TG_OP = 'DELETE') THEN")
+                .Append("RETURN OLD")
+                .AppendLine(statementTerminator)
+                .AppendLine("ELSE")
+                .Append("RETURN NEW")
+                .AppendLine(statementTerminator)
+                .Append("END IF")
+                .AppendLine(statementTerminator)
+                .Append("END")
+                .AppendLine(statementTerminator)
+                .Append($"${writeToEventLogFunctionName}$ language 'plpgsql'")
+                .AppendLine(statementTerminator);
+        }
+
+        private (string ColumnName, string ColumnValueExpression)[] GetActiveColumnsMap([NotNull] IEntityType eventLogEntity, [NotNull] string rowDataVariableName)
+        {
             var entityTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityType)).Relational().ColumnName;
             var entityContentColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityContent)).Relational().ColumnName;
             var operationTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.ModificationType)).Relational().ColumnName;
             var timestampColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.Timestamp)).Relational().ColumnName;
+            var transactionIdColumnName = eventLogEntity.FindProperty(nameof(SqlEventLogEntry.TransactionId))?.Relational().ColumnName;
 
-            builder.AppendLine($"CREATE OR REPLACE FUNCTION {writeToEventLogFunctionName}()");
-            builder.AppendLine($"RETURNS TRIGGER AS ${writeToEventLogFunctionName}$");
-            builder.Append("DECLARE data json").AppendLine(statementTerminator);
-            builder.AppendLine("BEGIN");
-            builder.AppendLine("IF (TG_OP = 'DELETE') THEN");
-            builder.Append("data = row_to_json(OLD)").AppendLine(statementTerminator);
-            builder.AppendLine("ELSE");
-            builder.Append("data = row_to_json(NEW)").AppendLine(statementTerminator);
-            builder.Append("END IF").AppendLine(statementTerminator);
-            builder.AppendLine($"INSERT INTO \"{eventLogTableName}\" (\"{entityTypeColumnName}\", \"{entityContentColumnName}\", \"{operationTypeColumnName}\", \"{timestampColumnName}\")");
-            builder.Append($"VALUES (TG_TABLE_NAME, data, TG_OP, {SqlCommonQueriesBuilder.TicksFromTimestamp("transaction_timestamp()")})").AppendLine(statementTerminator);
-            builder.AppendLine("IF (TG_OP = 'DELETE') THEN");
-            builder.Append("RETURN OLD").AppendLine(statementTerminator);
-            builder.AppendLine("ELSE");
-            builder.Append("RETURN NEW").AppendLine(statementTerminator);
-            builder.Append("END IF").AppendLine(statementTerminator);
-            builder.Append("END").AppendLine(statementTerminator);
-            builder.Append($"${writeToEventLogFunctionName}$ language 'plpgsql'").AppendLine(statementTerminator);
+            var currentTransactionTimestampTicksExpression = SqlCommonQueriesBuilder.TicksFromTimestamp(SqlCommonQueriesBuilder.CurrentTransactionTimestamp());
+            var currentTransactionIdExpression = SqlCommonQueriesBuilder.CurrentTransactionId();
+
+            return new[]
+                {
+                    (entityTypeColumnName, "TG_TABLE_NAME"),
+                    (entityContentColumnName, rowDataVariableName),
+                    (operationTypeColumnName, "TG_OP"),
+                    (timestampColumnName, currentTransactionTimestampTicksExpression),
+                    (transactionIdColumnName, currentTransactionIdExpression),
+                }
+                .Where(t => !string.IsNullOrEmpty(t.Item1))
+                .ToArray();
         }
 
         private const string writeToEventLogFunctionName = "write_modification_to_event_log";

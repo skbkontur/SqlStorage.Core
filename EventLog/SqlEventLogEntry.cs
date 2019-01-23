@@ -4,6 +4,7 @@ using SKBKontur.Catalogue.Objects;
 
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
 {
+    [UsedImplicitly(ImplicitUseTargetFlags.Members)]
     public class SqlEventLogEntry : SqlEntity
     {
         [NotNull]
@@ -16,6 +17,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
         public string ModificationType { get; set; }
 
         public long Offset { get; set; }
+
+        public long TransactionId { get; set; }
 
         [NotNull]
         public Timestamp Timestamp { get; set; }
