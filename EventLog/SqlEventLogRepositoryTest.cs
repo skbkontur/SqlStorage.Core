@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 using FluentAssertions;
 
 using GroboContainer.NUnitExtensions;
+
+using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +20,7 @@ using NUnit.Framework;
 
 using SKBKontur.Catalogue.EDI.SqlStorageCore;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
+using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
 
@@ -68,7 +73,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
             AssertUnorderedArraysEquality(actualEntities, entities);
         }
 
-        [Test] // todo (iperevoschikov, 18.09.2018): INSERT .. ON CONFLICT UPDATE ... produces two event log records when conflict occurs (trigger fires for insert and for update)
+        [Test]
         public void TestUpdateSingleObject()
         {
             var entity = GenerateObjects().First();
@@ -78,8 +83,8 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
             updatedEntity.Id = entity.Id;
             sqlStorage.CreateOrUpdate(updatedEntity);
 
-            var events = eventLogRepository.GetEvents(offset, 3);
-            events.Length.Should().Be(2);
+            var events = eventLogRepository.GetEvents(offset, 2);
+            events.Length.Should().Be(1);
             events.Select(e => e.EntitySnapshot).Should().AllBeEquivalentTo(updatedEntity, equivalenceOptionsConfig);
         }
 
@@ -98,7 +103,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
             sqlStorage.CreateOrUpdate(updatedEntities);
 
             var events = eventLogRepository.GetEvents(offset, entities.Length * 2 + 1);
-            events.Length.Should().Be(entities.Length * 2);
+            events.Length.Should().Be(entities.Length);
             events.All(e => e.EventType == SqlEventType.Update || e.EventType == SqlEventType.Create).Should().BeTrue();
             var snapshots = events.Select(e => e.EntitySnapshot).DistinctBy(e => e.Id).ToArray();
             snapshots.Length.Should().Be(entities.Length);
@@ -198,21 +203,19 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
         }
 
         [Test]
-        public void TestOrdering()
+        public void TestOffsetOrdering()
         {
             var entity = GenerateObjects().First();
-            var offset = GetLastOffset();
             sqlStorage.CreateOrUpdate(entity);
             sqlStorage.CreateOrUpdate(entity);
             sqlStorage.Delete(entity.Id);
-            var events = eventLogRepository.GetEvents(offset, 4);
+            var events = eventLogRepository.GetEvents(initialOffset, 3);
             events.Should().BeInAscendingOrder(e => e.EventOffset);
             events.Select(e => e.EventType)
                   .Should()
                   .BeEquivalentTo(
                       new[]
                           {
-                              SqlEventType.Create,
                               SqlEventType.Create,
                               SqlEventType.Update,
                               SqlEventType.Delete
@@ -232,22 +235,117 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
 
             eventLogRepository.GetEventsCount(fromOffsetExclusive : null).Should().Be(entitiesCount);
             eventLogRepository.GetEventsCount(fromOffsetExclusive : events[1].EventOffset).Should().Be(3);
-            eventLogRepository.GetEventsCount(fromOffsetExclusive : events.Last().EventOffset + 1000).Should().Be(0);
+            var lastEventOffset = events.Last().EventOffset;
+            var farFutureOffset = lastEventOffset + 1000;
+            eventLogRepository.GetEventsCount(fromOffsetExclusive : farFutureOffset).Should().Be(0);
         }
 
-        private long GetLastOffset()
+        // ReSharper disable StaticMemberInGenericType
+        private static readonly IsolationLevel[] supportedIsolationLevels =
+            {
+                IsolationLevel.ReadCommitted,
+                IsolationLevel.ReadUncommitted,
+                IsolationLevel.RepeatableRead,
+                IsolationLevel.Serializable,
+                IsolationLevel.Snapshot,
+                IsolationLevel.Unspecified,
+            };
+
+        private static readonly IsolationLevel[][] supportedTransactionIsolationLevelsCartesian = supportedIsolationLevels
+            .SelectMany(first => supportedIsolationLevels.Select(second => new[] {first, second}))
+            .ToArray();
+
+        // ReSharper restore StaticMemberInGenericType
+
+        // ReSharper disable once StaticMemberInGenericType
+        private static readonly object[][] testParallelTransactionsOrderingSource = new[] {true, false}
+            .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
+            .ToArray();
+
+        [TestCaseSource(nameof(testParallelTransactionsOrderingSource))]
+        public async Task TestOffsetOrderingParallelTransactions(IsolationLevel firstTransactionIsolationLevel, IsolationLevel secondTransactionIsolationLevel, bool withPrecedingEvents)
+        {
+            if (withPrecedingEvents) GeneratePrecedingEvents();
+
+            var fromOffsetExclusive = GetLastOffset();
+            var entities = GenerateObjects(2).ToArray();
+            var firstTransactionReady = new AutoResetEvent(false);
+            var secondTransactionFinish = new AutoResetEvent(false);
+
+            var firstTransaction = Task.Run(() => sqlStorage.Batch(storage =>
+                {
+                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
+                    firstTransactionReady.Set();
+                    secondTransactionFinish.WaitOne();
+                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
+                }, firstTransactionIsolationLevel)).ConfigureAwait(false);
+
+            firstTransactionReady.WaitOne();
+            sqlStorage.Batch(storage => storage.CreateOrUpdate<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
+            var secondTransactionEvents = eventLogRepository.GetEvents(fromOffsetExclusive, 1);
+            secondTransactionEvents.Should().BeEmpty();
+
+            secondTransactionFinish.Set();
+            await firstTransaction;
+
+            var events = eventLogRepository.GetEvents(fromOffsetExclusive, 4);
+            events.Length.Should().Be(3);
+            events.Should().BeInAscendingOrder(e => e.EventOffset);
+        }
+
+        // ReSharper disable once StaticMemberInGenericType
+        private static readonly object[][] testParallelTransactionsCountSource = new[] {true, false}
+            .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
+            .ToArray();
+
+        [TestCaseSource(nameof(testParallelTransactionsCountSource))]
+        public async Task TestGetEventsCountParallelTransactions(IsolationLevel firstTransactionIsolationLevel, IsolationLevel secondTransactionIsolationLevel, bool withPrecedingEvents)
+        {
+            if (withPrecedingEvents) GeneratePrecedingEvents();
+
+            var fromOffsetExclusive = GetLastOffset();
+            var entities = GenerateObjects(2).ToArray();
+            var firstTransactionReady = new AutoResetEvent(false);
+            var secondTransactionFinish = new AutoResetEvent(false);
+
+            var firstTransaction = Task.Run(() => sqlStorage.Batch(storage =>
+                {
+                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
+                    firstTransactionReady.Set();
+                    secondTransactionFinish.WaitOne();
+                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
+                }, firstTransactionIsolationLevel)).ConfigureAwait(false);
+
+            firstTransactionReady.WaitOne();
+            sqlStorage.Batch(storage => storage.CreateOrUpdate<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
+            eventLogRepository.GetEventsCount(fromOffsetExclusive).Should().Be(0);
+
+            secondTransactionFinish.Set();
+            await firstTransaction;
+
+            eventLogRepository.GetEventsCount(fromOffsetExclusive).Should().Be(3);
+        }
+
+        private void GeneratePrecedingEvents()
+        {
+            var preceding = GenerateObjects(100).ToArray();
+            sqlStorage.CreateOrUpdate(preceding);
+        }
+
+        private long? GetLastOffset()
         {
             using (var context = dbContextCreator.Create())
             {
                 var entityTypeName = context.Model.FindEntityType(typeof(TEntity))?.Relational()?.TableName;
-                Expression<Func<SqlEventLogEntry, bool>> filter = e => e.EntityType == entityTypeName;
+                Expression<Func<SqlEventLogEntry, bool>> filter = e => e.EntityType == entityTypeName
+                                                                       && e.TransactionId < PostgresFunctions.SnapshotMinimalTransactionId(PostgresFunctions.CurrentTransactionIdsSnapshot());
                 if (!context.Set<SqlEventLogEntry>().Any(filter))
-                    return default;
+                    return null;
                 return context.Set<SqlEventLogEntry>().Where(filter).Max(e => e.Offset);
             }
         }
 
-        private long initialOffset;
+        private long? initialOffset;
 
         private const int testObjectsCount = 100;
 
@@ -257,6 +355,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
         [Injected]
         private readonly DbContextCreator dbContextCreator;
 
+        [UsedImplicitly]
         private class DbContextCreator
         {
             public DbContextCreator(Func<SqlDbContext> createDbContext)

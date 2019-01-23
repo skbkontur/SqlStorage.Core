@@ -22,7 +22,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
         {
             var entity = new TestTimestampElement {Id = Guid.NewGuid(), Timestamp = new Timestamp(new DateTime(2018, 08, 06, 12, 7, 5, DateTimeKind.Utc))};
             sqlStorage.CreateOrUpdate(entity);
-            var events = eventLogRepository.GetEvents(0, 2);
+            var events = eventLogRepository.GetEvents(null, 2);
             events.Length.Should().Be(1);
             events.First().EntitySnapshot.Should().BeEquivalentTo(entity);
         }
