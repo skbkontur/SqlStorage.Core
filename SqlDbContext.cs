@@ -16,10 +16,10 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
     public sealed class SqlDbContext : DbContext
     {
-        public SqlDbContext([NotNull] ISqlDbContextSettings settings, [NotNull] ILog log)
+        public SqlDbContext([NotNull] ISqlDbContextSettings settings, [NotNull] ILoggerFactory loggerFactory)
         {
             this.settings = settings;
-            this.log = log.ForContext("SqlDbContext");
+            this.loggerFactory = loggerFactory;
         }
 
         protected override void OnConfiguring([NotNull] DbContextOptionsBuilder optionsBuilder)
@@ -40,7 +40,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 });
             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqlMigrationsScriptGenerator>();
             optionsBuilder.ReplaceService<IMigrationsAnnotationProvider, SqlMigrationsAnnotationProvider>();
-            optionsBuilder.UseLoggerFactory(new LoggerFactory(new[] {new VostokLoggerProvider(log)}));
+            optionsBuilder.UseLoggerFactory(loggerFactory);
         }
 
         protected override void OnModelCreating([NotNull] ModelBuilder modelBuilder)
@@ -77,6 +77,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         }
 
         private readonly ISqlDbContextSettings settings;
-        private readonly ILog log;
+        private readonly ILoggerFactory loggerFactory;
     }
 }
