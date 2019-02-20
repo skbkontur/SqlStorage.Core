@@ -9,14 +9,17 @@ using Npgsql;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
 
+using Vostok.Logging.Abstractions;
+using Vostok.Logging.Microsoft;
+
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
     public sealed class SqlDbContext : DbContext
     {
-        public SqlDbContext([NotNull] ISqlDbContextSettings settings, [NotNull] ILoggerFactory loggerFactory)
+        public SqlDbContext([NotNull] ISqlDbContextSettings settings, [NotNull] ILog log)
         {
             this.settings = settings;
-            this.loggerFactory = loggerFactory;
+            this.log = log.ForContext("SqlDbContext");
         }
 
         protected override void OnConfiguring([NotNull] DbContextOptionsBuilder optionsBuilder)
@@ -37,7 +40,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                 });
             optionsBuilder.ReplaceService<IMigrationsSqlGenerator, SqlMigrationsScriptGenerator>();
             optionsBuilder.ReplaceService<IMigrationsAnnotationProvider, SqlMigrationsAnnotationProvider>();
-            optionsBuilder.UseLoggerFactory(loggerFactory);
+            optionsBuilder.UseLoggerFactory(new LoggerFactory(new[] {new VostokLoggerProvider(log)}));
         }
 
         protected override void OnModelCreating([NotNull] ModelBuilder modelBuilder)
@@ -74,8 +77,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         }
 
         private readonly ISqlDbContextSettings settings;
-
-        [NotNull]
-        private readonly ILoggerFactory loggerFactory;
+        private readonly ILog log;
     }
 }
