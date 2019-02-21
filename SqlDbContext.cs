@@ -9,9 +9,6 @@ using Npgsql;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
 using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
 
-using Vostok.Logging.Abstractions;
-using Vostok.Logging.Microsoft;
-
 namespace SKBKontur.Catalogue.EDI.SqlStorageCore
 {
     public sealed class SqlDbContext : DbContext
