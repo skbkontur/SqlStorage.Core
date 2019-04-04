@@ -23,10 +23,10 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
         public static EntityTypeBuilder ApplyTimestampConverter([NotNull] this EntityTypeBuilder entityTypeBuilder)
         {
             var timestampProperties = entityTypeBuilder
-                .Metadata
-                .ClrType
-                .GetProperties()
-                .Where(pi => pi.CanRead && pi.CanWrite && pi.PropertyType == typeof(Timestamp));
+                                      .Metadata
+                                      .ClrType
+                                      .GetProperties()
+                                      .Where(pi => pi.CanRead && pi.CanWrite && pi.PropertyType == typeof(Timestamp));
 
             foreach (var timestampProperty in timestampProperties)
             {
@@ -34,6 +34,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
                     .Property(timestampProperty.PropertyType, timestampProperty.Name)
                     .HasConversion(timestampConverter);
             }
+
             return entityTypeBuilder;
         }
 
@@ -41,7 +42,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
         public static EntityTypeBuilder ApplyJsonColumns([NotNull] this EntityTypeBuilder entityTypeBuilder)
         {
             var jsonColumnProperties = ExtractPropertiesMappedWithAttribute<JsonColumnAttribute>(entityTypeBuilder);
-            foreach (var propertyInfo in jsonColumnProperties)
+            foreach (var (propertyInfo, _) in jsonColumnProperties)
             {
                 var converter = new RuntimeValueConverter(
                     propertyInfo.PropertyType,
@@ -53,19 +54,21 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
                     .HasColumnType("json")
                     .HasConversion(converter);
             }
+
             return entityTypeBuilder;
         }
 
         [NotNull]
-        private static IEnumerable<PropertyInfo> ExtractPropertiesMappedWithAttribute<TAttribute>([NotNull] EntityTypeBuilder entityTypeBuilder)
+        private static IEnumerable<(PropertyInfo Property, TAttribute[] Attributes)> ExtractPropertiesMappedWithAttribute<TAttribute>([NotNull] EntityTypeBuilder entityTypeBuilder)
             where TAttribute : Attribute
         {
-            var attributeType = typeof(TAttribute);
             var jsonColumnProperties = entityTypeBuilder
-                .Metadata
-                .ClrType
-                .GetProperties()
-                .Where(pi => pi.CanRead && pi.CanWrite && pi.GetCustomAttributes(attributeType, inherit : false).Any());
+                                       .Metadata
+                                       .ClrType
+                                       .GetProperties()
+                                       .Where(pi => pi.CanRead && pi.CanWrite)
+                                       .Select(pi => (pi, pi.GetCustomAttributes<TAttribute>(inherit : false).ToArray()))
+                                       .Where(t => t.Item2.Any());
             return jsonColumnProperties;
         }
 
@@ -80,24 +83,44 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
         public static EntityTypeBuilder ApplyIndices([NotNull] this EntityTypeBuilder entityTypeBuilder)
         {
             var indexedProperties = ExtractPropertiesMappedWithAttribute<IndexedColumnAttribute>(entityTypeBuilder);
-            foreach (var property in indexedProperties)
-                entityTypeBuilder.HasIndex(property.Name);
+            foreach (var (property, attributes) in indexedProperties)
+            {
+                var indexAttribute = attributes.Single();
+                var indexBuilder = entityTypeBuilder.HasIndex(property.Name);
+                if (indexAttribute.IndexType != IndexType.BTree)
+                    indexBuilder.ForNpgsqlHasMethod(ToNpgsqlIndexName(indexAttribute.IndexType));
+            }
             return entityTypeBuilder;
+        }
+
+        [NotNull]
+        private static string ToNpgsqlIndexName(IndexType indexType)
+        {
+            switch (indexType)
+            {
+            case IndexType.BTree:
+                return "b-tree";
+            case IndexType.Hash:
+                return "hash";
+            case IndexType.Brin:
+                return "brin";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(indexType), indexType, "Unsupported index type");
+            }
         }
 
         [NotNull]
         public static EntityTypeBuilder ApplyUniqueConstraints([NotNull] this EntityTypeBuilder entityTypeBuilder)
         {
             var uniqueProperties = ExtractPropertiesMappedWithAttribute<UniqueConstraintAttribute>(entityTypeBuilder);
-            var uniqueGroups = uniqueProperties.SelectMany(p => p.GetCustomAttributes(typeof(UniqueConstraintAttribute), inherit : false)
-                                                                 .Cast<UniqueConstraintAttribute>()
-                                                                 .Select(a => (GroupName: a.GroupName ?? p.Name, a.Order, PropertyName: p.Name)))
+            var uniqueGroups = uniqueProperties.SelectMany(t => t.Attributes.Select(a => (GroupName : a.GroupName ?? t.Property.Name, a.Order, PropertyName : t.Property.Name)))
                                                .OrderBy(t => t.Order)
                                                .GroupBy(t => t.GroupName);
             foreach (var uniqueGroup in uniqueGroups)
             {
                 entityTypeBuilder.HasIndex(uniqueGroup.Select(g => g.PropertyName).ToArray()).IsUnique(unique : true);
             }
+
             return entityTypeBuilder;
         }
     }
