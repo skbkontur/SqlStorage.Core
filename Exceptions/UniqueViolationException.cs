@@ -15,6 +15,6 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions
         public string Constraint { get; }
 
         [NotNull]
-        public string Details { get;}
+        public string Details { get; }
     }
 }

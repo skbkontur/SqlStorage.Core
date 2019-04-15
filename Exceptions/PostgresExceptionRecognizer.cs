@@ -10,6 +10,9 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions
         {
             switch (postgresException.SqlState)
             {
+            case "23502":
+                sqlStorageException = new NotNullViolationException(postgresException.MessageText, postgresException.ColumnName);
+                return true;
             case "23505":
                 sqlStorageException = new UniqueViolationException(postgresException.MessageText, postgresException.ConstraintName, postgresException.Detail);
                 return true;
