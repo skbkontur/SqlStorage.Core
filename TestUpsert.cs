@@ -72,7 +72,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
             entity.RequiredValue = null;
 
             Action creating = () => sqlStorage.CreateOrUpdate(entity);
-            creating.Should().Throw<UnknownSqlStorageException>();
+            creating.Should().Throw<NotNullViolationException>()
+                    .Which.ColumnName
+                    .Should().Be(nameof(entity.RequiredValue));
         }
 
         [Test]
@@ -83,7 +85,9 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 
             entity.RequiredValue = null;
             Action updating = () => sqlStorage.CreateOrUpdate(entity);
-            updating.Should().Throw<UnknownSqlStorageException>();
+            updating.Should().Throw<NotNullViolationException>()
+                    .Which.ColumnName
+                    .Should().Be(nameof(entity.RequiredValue));
         }
 
         [Test]
