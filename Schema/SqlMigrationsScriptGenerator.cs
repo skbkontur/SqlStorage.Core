@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
-using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations;
 
 using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
@@ -19,8 +18,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
     [UsedImplicitly]
     public class SqlMigrationsScriptGenerator : NpgsqlMigrationsSqlGenerator
     {
-        public SqlMigrationsScriptGenerator(MigrationsSqlGeneratorDependencies dependencies, INpgsqlOptions npgsqlOptions)
-            : base(dependencies, npgsqlOptions)
+        public SqlMigrationsScriptGenerator(MigrationsSqlGeneratorDependencies dependencies)
+            : base(dependencies)
         {
         }
 
