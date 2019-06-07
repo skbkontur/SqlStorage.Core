@@ -3,7 +3,7 @@ using GroboContainer.Impl;
 
 using JetBrains.Annotations;
 
-using SKBKontur.Catalogue.EDI.Domain.ContainerConfiguration;
+using SKBKontur.Catalogue.ServiceLib;
 
 namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 {

@@ -6,9 +6,9 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Logging;
 
-using SKBKontur.Catalogue.EDI.Domain.ContainerConfiguration;
 using SKBKontur.Catalogue.EDI.SqlStorageCore;
 using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
+using SKBKontur.Catalogue.ServiceLib;
 using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
 
 using Vostok.Logging.Console;
