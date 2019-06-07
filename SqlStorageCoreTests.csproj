@@ -24,9 +24,6 @@
     <Reference Include="Catalogue.Core.Configuration.Settings">
       <HintPath>..\..\Assemblies\Temp\Catalogue.Core.Configuration.Settings.dll</HintPath>
     </Reference>
-    <Reference Include="Catalogue.ServiceLib">
-      <HintPath>..\..\Assemblies\Temp\Catalogue.ServiceLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
