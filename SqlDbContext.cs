@@ -27,9 +27,12 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
                     Username = settings.Username,
                     Password = settings.Password,
                     Database = settings.Database,
-                }.ToString();
+                };
 
-            optionsBuilder.UseNpgsql(connectionString, options =>
+            if (settings.Port.HasValue)
+                connectionString.Port = settings.Port.Value;
+
+            optionsBuilder.UseNpgsql(connectionString.ToString(), options =>
                 {
                     options.EnableRetryOnFailure(settings.MaxRetryRequestOnFailureCount);
                     if (settings.MigrationsAssembly != null)

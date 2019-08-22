@@ -9,6 +9,8 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
         [NotNull]
         string Host { get; }
 
+        int? Port { get; }
+
         [NotNull]
         string Username { get; }
 
