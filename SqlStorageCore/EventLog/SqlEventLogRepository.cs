@@ -8,10 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
-using SKBKontur.Catalogue.Objects;
+using SkbKontur.SqlStorageCore.Schema;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
+namespace SkbKontur.SqlStorageCore.EventLog
 {
     [UsedImplicitly]
     public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
@@ -32,7 +31,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
             {
                 var name = context.Model.FindEntityType(entityType)?.Relational()?.TableName;
                 if (string.IsNullOrEmpty(name))
-                    throw new InvalidProgramStateException($"EventLog entity type name not found for {entityType.Name}");
+                    throw new InvalidOperationException($"EventLog entity type name not found for {entityType.Name}");
                 return name;
             }
         }
@@ -103,7 +102,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
             case "DELETE":
                 return SqlEventType.Delete;
             default:
-                throw new InvalidProgramStateException($"Unknown sql event type: {eventType}");
+                throw new ArgumentOutOfRangeException($"Unknown sql event type: {eventType}");
             }
         }
 

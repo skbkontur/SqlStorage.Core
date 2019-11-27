@@ -2,7 +2,7 @@
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.Migrations
+namespace SkbKontur.SqlStorageCore.Tests.Migrations
 {
     public partial class AddTestBatchStorageElement : Migration
     {

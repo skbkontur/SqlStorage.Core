@@ -1,4 +1,4 @@
-﻿namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
+﻿namespace SkbKontur.SqlStorageCore.EventLog
 {
     public enum SqlEventType
     {

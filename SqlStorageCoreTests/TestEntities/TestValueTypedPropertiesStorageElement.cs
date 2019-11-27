@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore;
-
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
+namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 {
     public class TestValueTypedPropertiesStorageElement : SqlEntity
     {

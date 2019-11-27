@@ -1,8 +1,10 @@
 ﻿using System;
+
 using Microsoft.EntityFrameworkCore.Migrations;
+
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.Migrations
+namespace SkbKontur.SqlStorageCore.Tests.Migrations
 {
     public partial class InitialCreation : Migration
     {

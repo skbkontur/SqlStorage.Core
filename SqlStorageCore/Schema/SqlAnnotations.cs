@@ -1,4 +1,4 @@
-﻿namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
+﻿namespace SkbKontur.SqlStorageCore.Schema
 {
     public static class SqlAnnotations
     {

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
+namespace SkbKontur.SqlStorageCore.Schema
 {
     [UsedImplicitly]
     public class SqlMigrationsAnnotationProvider : NpgsqlMigrationsAnnotationProvider

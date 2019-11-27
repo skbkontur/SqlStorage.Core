@@ -1,4 +1,4 @@
-﻿namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
+﻿namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 {
     public class TestComplexColumnElement
     {

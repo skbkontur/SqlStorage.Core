@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+namespace SkbKontur.SqlStorageCore
 {
     public class SqlEntity : ISqlEntity<Guid>
     {

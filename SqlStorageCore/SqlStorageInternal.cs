@@ -10,9 +10,9 @@ using MoreLinq;
 
 using Npgsql;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions;
+using SkbKontur.SqlStorageCore.Exceptions;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+namespace SkbKontur.SqlStorageCore
 {
     internal class SqlStorageInternal : ISqlStorage
     {

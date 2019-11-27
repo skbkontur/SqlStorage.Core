@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Linq;
@@ -18,13 +18,12 @@ using MoreLinq;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
-using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.SqlStorageCore.EventLog;
+using SkbKontur.SqlStorageCore.Schema;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestWrappers;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
+namespace SkbKontur.SqlStorageCore.Tests.EventLog
 {
     [AndSqlStorageCleanUp(typeof(SqlEventLogEntry))]
     [TestFixture(typeof(TestValueTypedPropertiesStorageElement), typeof(Guid))]

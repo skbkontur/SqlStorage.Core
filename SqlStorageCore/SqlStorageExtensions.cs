@@ -6,10 +6,7 @@ using AgileObjects.ReadableExpressions;
 
 using JetBrains.Annotations;
 
-using SKBKontur.Catalogue.Expressions;
-using SKBKontur.Catalogue.Objects;
-
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+namespace SkbKontur.SqlStorageCore
 {
     public static class SqlStorageExtensions
     {
@@ -18,13 +15,11 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore
             where T : class, ISqlEntity<TKey>
         {
             var searchResult = storage.Find(criterion, 2);
-            if (searchResult.Length > 1)
-            {
-                var criterionReadable = criterion.ToSimplifiedExpression().Expression.ToReadableString();
-                throw new InvalidProgramStateException($"Found more than one {typeof(T).Name} trying to get single. Criterion: {criterionReadable}");
-            }
+            if (searchResult.Length <= 1)
+                return searchResult.FirstOrDefault();
 
-            return searchResult.FirstOrDefault();
+            var criterionReadable = criterion.ToReadableString();
+            throw new InvalidOperationException($"Found more than one {typeof(T).Name} trying to get single. Criterion: {criterionReadable}");
         }
     }
 }

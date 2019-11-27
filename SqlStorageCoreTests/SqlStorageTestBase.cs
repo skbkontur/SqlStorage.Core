@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using AutoFixture;
@@ -8,11 +8,9 @@ using FluentAssertions.Equivalency;
 
 using GroboContainer.NUnitExtensions;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.Catalogue.EDIFunctionalTests.Commons;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestWrappers;
+using SkbKontur.SqlStorageCore.Tests.TestWrappers;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
     [GroboTestSuite, WithTestSqlStorage]
     public abstract class SqlStorageTestBase<TEntity, TKey>
@@ -22,7 +20,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 
         private static EquivalencyAssertionOptions<T> EquivalenceOptionsConfig<T>(EquivalencyAssertionOptions<T> options)
         {
-            return options.UsingCloseEnoughDateTimeComparision();
+            return options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1)).WhenTypeIs<DateTime>();
         }
 
         protected IEnumerable<TEntity> GenerateObjects(int count = 1)
@@ -32,7 +30,7 @@ namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
 
         protected static void AssertUnorderedArraysEquality<T>(IEnumerable<T> actualObjects, IEnumerable<T> objects)
         {
-            actualObjects.Should().BeEquivalentTo(objects, options => options.UsingCloseEnoughDateTimeComparision());
+            actualObjects.Should().BeEquivalentTo(objects, EquivalenceOptionsConfig);
         }
 
         [Injected]

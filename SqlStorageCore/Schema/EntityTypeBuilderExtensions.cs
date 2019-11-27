@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 using Newtonsoft.Json;
 
-using SKBKontur.Catalogue.Objects;
+using SkbKontur.Cassandra.TimeBasedUuid;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
+namespace SkbKontur.SqlStorageCore.Schema
 {
     public static class EntityTypeBuilderExtensions
     {

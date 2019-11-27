@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using FluentAssertions;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions;
-using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.SqlStorageCore.Exceptions;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestWrappers;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
     [AndSqlStorageCleanUp(typeof(TestUpsertSqlEntry))]
     public class TestUpsert : SqlStorageTestBase<TestUpsertSqlEntry, Guid>

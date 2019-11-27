@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
     public class TestSqlEntitiesRegistry : SqlEntitiesRegistry
     {

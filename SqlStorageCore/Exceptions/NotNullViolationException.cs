@@ -1,4 +1,4 @@
-﻿namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions
+﻿namespace SkbKontur.SqlStorageCore.Exceptions
 {
     public sealed class NotNullViolationException : SqlStorageException
     {

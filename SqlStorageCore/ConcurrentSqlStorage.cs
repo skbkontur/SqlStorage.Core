@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+namespace SkbKontur.SqlStorageCore
 {
     [UsedImplicitly]
     public class ConcurrentSqlStorage<TEntry, TKey> : IConcurrentSqlStorage<TEntry, TKey>

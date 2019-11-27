@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+namespace SkbKontur.SqlStorageCore
 {
     public abstract class SqlEntitiesRegistry
     {

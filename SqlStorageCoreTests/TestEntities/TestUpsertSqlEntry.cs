@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 using JetBrains.Annotations;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
+using SkbKontur.SqlStorageCore.Schema;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
+namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 {
     public class TestUpsertSqlEntry : SqlEntity
     {

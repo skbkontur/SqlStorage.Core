@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq;
 using System.Threading;
@@ -10,9 +10,9 @@ using MoreLinq;
 
 using NUnit.Framework;
 
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
     [TestFixture(IsolationLevel.ReadCommitted)]
     [TestFixture(IsolationLevel.Serializable)]

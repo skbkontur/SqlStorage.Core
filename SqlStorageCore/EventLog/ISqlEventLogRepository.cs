@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog
+namespace SkbKontur.SqlStorageCore.EventLog
 {
     public interface ISqlEventLogRepository<TEntity, TKey> where TEntity : ISqlEntity<TKey>
     {

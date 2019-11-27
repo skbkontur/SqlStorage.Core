@@ -2,7 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
+namespace SkbKontur.SqlStorageCore.Schema
 {
     public static class PostgresFunctions
     {

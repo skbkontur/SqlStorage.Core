@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions
+namespace SkbKontur.SqlStorageCore.Exceptions
 {
     public abstract class SqlStorageException : Exception
     {

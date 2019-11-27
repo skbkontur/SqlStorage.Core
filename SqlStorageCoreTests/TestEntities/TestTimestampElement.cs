@@ -1,7 +1,6 @@
-﻿using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.Catalogue.Objects;
+using SkbKontur.Cassandra.TimeBasedUuid;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities
+namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 {
     public class TestTimestampElement : SqlEntity
     {

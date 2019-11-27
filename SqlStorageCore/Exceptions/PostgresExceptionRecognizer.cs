@@ -2,7 +2,7 @@
 
 using Npgsql;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions
+namespace SkbKontur.SqlStorageCore.Exceptions
 {
     public static class PostgresExceptionRecognizer
     {

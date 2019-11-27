@@ -6,12 +6,11 @@ using FluentAssertions;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
-    [AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
+    //[AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
     public class DeleteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement, Guid>
     {
         [Test]

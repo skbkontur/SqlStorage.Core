@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -10,10 +11,9 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
-using SKBKontur.Catalogue.Objects;
+using SkbKontur.SqlStorageCore.EventLog;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
+namespace SkbKontur.SqlStorageCore.Schema
 {
     [UsedImplicitly]
     public class SqlMigrationsScriptGenerator : NpgsqlMigrationsSqlGenerator
@@ -92,7 +92,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
         {
             var eventLogEntity = model?.FindEntityType(typeof(SqlEventLogEntry));
             if (eventLogEntity == null)
-                throw new InvalidProgramStateException($"{nameof(SqlEventLogEntry)} not found in model.");
+                throw new InvalidOperationException($"{nameof(SqlEventLogEntry)} not found in model.");
             return eventLogEntity;
         }
 
@@ -120,7 +120,7 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
             var eventLogTableName = eventLogEntity.Relational().TableName;
 
             if (string.IsNullOrEmpty(eventLogTableName))
-                throw new InvalidProgramStateException($"{nameof(SqlEventLogEntry)} table name not found. Event log model: {eventLogEntity.ToDebugString(singleLine : false)}");
+                throw new InvalidOperationException($"{nameof(SqlEventLogEntry)} table name not found. Event log model: {eventLogEntity.ToDebugString(singleLine : false)}");
             const string rowDataVariableName = "data";
 
             var insertedColumnsMap = GetActiveColumnsMap(eventLogEntity, rowDataVariableName);
@@ -168,15 +168,15 @@ namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
             var currentTransactionIdExpression = SqlCommonQueriesBuilder.CurrentTransactionId();
 
             return new[]
-                {
-                    (entityTypeColumnName, "TG_TABLE_NAME"),
-                    (entityContentColumnName, rowDataVariableName),
-                    (operationTypeColumnName, "TG_OP"),
-                    (timestampColumnName, currentTransactionTimestampTicksExpression),
-                    (transactionIdColumnName, currentTransactionIdExpression),
-                }
-                .Where(t => !string.IsNullOrEmpty(t.Item1))
-                .ToArray();
+                       {
+                           (entityTypeColumnName, "TG_TABLE_NAME"),
+                           (entityContentColumnName, rowDataVariableName),
+                           (operationTypeColumnName, "TG_OP"),
+                           (timestampColumnName, currentTransactionTimestampTicksExpression),
+                           (transactionIdColumnName, currentTransactionIdExpression),
+                       }
+                   .Where(t => !string.IsNullOrEmpty(t.Item1))
+                   .ToArray();
         }
 
         private const string writeToEventLogFunctionName = "write_modification_to_event_log";

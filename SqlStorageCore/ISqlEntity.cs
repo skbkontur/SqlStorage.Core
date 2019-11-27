@@ -1,4 +1,4 @@
-﻿namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+﻿namespace SkbKontur.SqlStorageCore
 {
     public interface ISqlEntity<TKey>
     {

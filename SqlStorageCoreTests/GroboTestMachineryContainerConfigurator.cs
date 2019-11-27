@@ -1,11 +1,11 @@
-﻿using GroboContainer.Core;
+using GroboContainer.Core;
 using GroboContainer.Impl;
 
 using JetBrains.Annotations;
 
-using SKBKontur.Catalogue.ServiceLib;
+using SkbKontur.SqlStorageCore.Tests.TestUtils;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public static class GroboTestMachineryContainerConfigurator

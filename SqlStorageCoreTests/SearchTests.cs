@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,10 +7,9 @@ using MoreLinq;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
     public class SearchTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement, Guid>
     {

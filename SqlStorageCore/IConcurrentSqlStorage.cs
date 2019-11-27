@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 using JetBrains.Annotations;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+namespace SkbKontur.SqlStorageCore
 {
     public interface IConcurrentSqlStorage<TEntry, in TKey>
         where TEntry : class, ISqlEntity<TKey>

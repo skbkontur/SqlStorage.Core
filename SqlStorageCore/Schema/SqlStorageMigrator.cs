@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 using Vostok.Logging.Abstractions;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Schema
+namespace SkbKontur.SqlStorageCore.Schema
 {
     [UsedImplicitly]
     public class SqlStorageMigrator

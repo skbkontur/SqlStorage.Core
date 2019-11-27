@@ -6,10 +6,10 @@ using Microsoft.Extensions.Logging;
 
 using Npgsql;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
-using SKBKontur.Catalogue.EDI.SqlStorageCore.Schema;
+using SkbKontur.SqlStorageCore.EventLog;
+using SkbKontur.SqlStorageCore.Schema;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore
+namespace SkbKontur.SqlStorageCore
 {
     public sealed class SqlDbContext : DbContext
     {

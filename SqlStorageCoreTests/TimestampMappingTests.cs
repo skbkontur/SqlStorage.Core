@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 
 using FluentAssertions;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.Catalogue.Objects;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.Cassandra.TimeBasedUuid;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestWrappers;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests
+namespace SkbKontur.SqlStorageCore.Tests
 {
     [AndSqlStorageCleanUp(typeof(TestTimestampElement))]
     public class TimestampMappingTests : SqlStorageTestBase<TestTimestampElement, Guid>

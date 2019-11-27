@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using FluentAssertions;
@@ -7,12 +7,12 @@ using GroboContainer.NUnitExtensions;
 
 using NUnit.Framework;
 
-using SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog;
-using SKBKontur.Catalogue.EDIFunctionalTests.Commons.TestWrappers;
-using SKBKontur.Catalogue.Objects;
-using SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities;
+using SkbKontur.Cassandra.TimeBasedUuid;
+using SkbKontur.SqlStorageCore.EventLog;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestWrappers;
 
-namespace SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.EventLog
+namespace SkbKontur.SqlStorageCore.Tests.EventLog
 {
     [AndSqlStorageCleanUp(typeof(SqlEventLogEntry))]
     public class TimestampPropertyTest : SqlStorageTestBase<TestTimestampElement, Guid>

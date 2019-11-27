@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace SKBKontur.Catalogue.EDI.SqlStorageCore.Exceptions
+namespace SkbKontur.SqlStorageCore.Exceptions
 {
     public sealed class UniqueViolationException : SqlStorageException
     {
