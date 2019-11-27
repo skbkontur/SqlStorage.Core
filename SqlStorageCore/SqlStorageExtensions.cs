@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
-
-using AgileObjects.ReadableExpressions;
 
 using JetBrains.Annotations;
 
@@ -18,8 +16,7 @@ namespace SkbKontur.SqlStorageCore
             if (searchResult.Length <= 1)
                 return searchResult.FirstOrDefault();
 
-            var criterionReadable = criterion.ToReadableString();
-            throw new InvalidOperationException($"Found more than one {typeof(T).Name} trying to get single. Criterion: {criterionReadable}");
+            throw new InvalidOperationException($"Found more than one {typeof(T).Name} trying to get single.");
         }
     }
 }
