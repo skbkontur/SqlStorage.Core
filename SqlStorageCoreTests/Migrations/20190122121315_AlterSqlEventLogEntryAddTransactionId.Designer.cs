@@ -23,7 +23,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                 .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            modelBuilder.Entity("SKBKontur.Catalogue.EDI.SqlStorageCore.EventLog.SqlEventLogEntry", b =>
+            modelBuilder.Entity("SkbKontur.SqlStorageCore.EventLog.SqlEventLogEntry", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasDefaultValueSql("uuid_generate_v4()");
@@ -51,7 +51,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                     b.ToTable("SqlEventLogEntry");
                 });
 
-            modelBuilder.Entity("SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities.TestBatchStorageElement", b =>
+            modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestBatchStorageElement", b =>
                 {
                     b.Property<Guid>("Id");
 
@@ -64,7 +64,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                     b.HasAnnotation("EDI:EventLogTrigger", true);
                 });
 
-            modelBuilder.Entity("SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities.TestJsonArrayColumnElement", b =>
+            modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestJsonArrayColumnElement", b =>
                 {
                     b.Property<Guid>("Id");
 
@@ -79,7 +79,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                     b.HasAnnotation("EDI:EventLogTrigger", true);
                 });
 
-            modelBuilder.Entity("SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities.TestJsonColumnElement", b =>
+            modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestJsonColumnElement", b =>
                 {
                     b.Property<Guid>("Id");
 
@@ -94,7 +94,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                     b.HasAnnotation("EDI:EventLogTrigger", true);
                 });
 
-            modelBuilder.Entity("SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities.TestTimestampElement", b =>
+            modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestTimestampElement", b =>
                 {
                     b.Property<Guid>("Id");
 
@@ -107,7 +107,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                     b.HasAnnotation("EDI:EventLogTrigger", true);
                 });
 
-            modelBuilder.Entity("SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities.TestUpsertSqlEntry", b =>
+            modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestUpsertSqlEntry", b =>
                 {
                     b.Property<Guid>("Id");
 
@@ -130,7 +130,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                     b.HasAnnotation("EDI:EventLogTrigger", true);
                 });
 
-            modelBuilder.Entity("SKBKontur.EDIFunctionalTests.SqlStorageCoreTests.TestEntities.TestValueTypedPropertiesStorageElement", b =>
+            modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestValueTypedPropertiesStorageElement", b =>
                 {
                     b.Property<Guid>("Id");
 
