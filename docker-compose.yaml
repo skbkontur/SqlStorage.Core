@@ -19,6 +19,7 @@ services:
     healthcheck_halt:
         container_name: healthcheck_halt
         image: busybox:latest
+        platform: linux
         command: /bin/sh echo 'dependent services started'
         depends_on:
             postgres:
