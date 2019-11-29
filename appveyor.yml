@@ -34,16 +34,7 @@ build_script:
   - cmd: dotnet pack --no-build --configuration Release
 
 before_test:
-  - cmd: docker-compose up
-  - ps: |
-      docker container ls --format "{{.Names}}" | ForEach-Object {
-        do {
-            Start-Sleep 5
-            $status = docker inspect -f "{{.State.Health.Status}}" $_
-            Write-Host "Container $_ status: $status"
-        }
-        while($status -ne "healthy")
-      }
+  - cmd: docker-compose up -d
 
 test_script:
   - cmd: dotnet test --no-build --verbosity normal --configuration Release --logger trx
