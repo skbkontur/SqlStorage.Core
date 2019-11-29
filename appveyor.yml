@@ -35,6 +35,13 @@ build_script:
 
 before_test:
   - cmd: docker-compose up -d
+  - ps: |
+      docker container ls --format "{{.Names}}" | ForEach-Object {
+        while($(docker inspect -f "{{.State.Health.Status}}" $_) -ne "healthy") {
+          Write-Host "Wait container $_ to be healtht"
+          Start-Sleep 5
+        }
+      }
 
 test_script:
   - cmd: dotnet test --no-build --verbosity normal --configuration Release --logger trx
