@@ -11,6 +11,7 @@ services:
         ports:
             - 5432:5432
         healthcheck:
+            start_period: 15s
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
             timeout: 5s
@@ -20,7 +21,6 @@ services:
         container_name: healthcheck_halt
         image: busybox:latest
         platform: linux
-        command: ["echo", "dependent services started"]
         depends_on:
             postgres:
                 condition: service_healthy
