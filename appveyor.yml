@@ -42,10 +42,10 @@ test_script:
 after_test:
   - cmd: docker-compose down
   - ps: |
-    $wc = New-Object 'System.Net.WebClient'
-    Get-ChildItem -Path .\SqlStorageCoreTests\TestResults\ - Filter *.trx -File | ForEach-Object {
+      $wc = New-Object 'System.Net.WebClient'
+      Get-ChildItem -Path .\SqlStorageCoreTests\TestResults\ - Filter *.trx -File | ForEach-Object {
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:APPVEYOR_JOB_ID)", $_.FullName)
-    }
+      }
 
 artifacts:
   - path: './SqlStorageCore/bin/Release/*.nupkg'
