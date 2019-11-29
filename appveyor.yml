@@ -34,7 +34,7 @@ build_script:
   - cmd: dotnet pack --no-build --configuration Release
 
 before_test:
-  - cmd: docker-compose up -d
+  - cmd: docker-compose up
   - ps: |
       docker container ls --format "{{.Names}}" | ForEach-Object {
         do {
