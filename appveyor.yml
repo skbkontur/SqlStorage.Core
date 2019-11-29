@@ -30,17 +30,19 @@ before_build:
   - cmd: dotnet restore --verbosity minimal
 
 build_script:
-  - cmd: dotnet build --configuration Release
+  - cmd: dotnet build --no-restore --configuration Release
   - cmd: dotnet pack --no-build --configuration Release
 
 before_test:
   - cmd: docker-compose up -d
   - ps: |
       docker container ls --format "{{.Names}}" | ForEach-Object {
-        while($(docker inspect -f "{{.State.Health.Status}}" $_) -ne "healthy") {
-          Write-Host "Wait container $_ to be healtht"
-          Start-Sleep 5
+        do {
+            Start-Sleep 5
+            $status = docker inspect -f "{{.State.Health.Status}}" $_
+            Write-Host "Container $_ status: $status"
         }
+        while($status -ne "healthy")
       }
 
 test_script:
