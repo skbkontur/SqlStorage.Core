@@ -37,15 +37,7 @@ before_test:
   - cmd: docker-compose up -d
 
 test_script:
-  - cmd: dotnet test --no-build --verbosity normal --configuration Release --logger trx
-
-after_test:
-  - cmd: docker-compose down
-  - ps: |
-      $wc = New-Object 'System.Net.WebClient'
-      Get-ChildItem -Path .\SqlStorageCoreTests\TestResults\ - Filter *.trx -File | ForEach-Object {
-        $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:APPVEYOR_JOB_ID)", $_.FullName)
-      }
+  - cmd: dotnet test --no-build --verbosity normal --configuration Release --logger Appveyor
 
 artifacts:
   - path: './SqlStorageCore/bin/Release/*.nupkg'
