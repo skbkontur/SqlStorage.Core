@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -75,16 +76,33 @@ namespace SkbKontur.SqlStorageCore
                 WithDbContext(context =>
                     {
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
-                        //entities.Batch(1000) // todo написать без morelinq
-                        //        .ForEach(batch =>
-                        //            {
-                        //                var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
-                        //                if (whenMatched != null)
-                        //                {
-                        //                    upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
-                        //                }
-                        //                upsertCommandBuilder.Run();
-                        //            });
+                        var batches = new List<List<TEntry>>();
+                        const int maxBatchCount = 1000;
+                        var currentBatch = new List<TEntry>();
+                        foreach (var entry in entities)
+                        {
+                            if (currentBatch.Count == maxBatchCount)
+                            {
+                                batches.Add(currentBatch);
+                                currentBatch = new List<TEntry>();
+                            }
+                            else
+                            {
+                                currentBatch.Add(entry);
+                            }
+                        }
+                        if (currentBatch.Count > 0)
+                            batches.Add(currentBatch);
+
+                        batches.ForEach(batch =>
+                                    {
+                                        var upsertCommandBuilder = context.UpsertRange((IEnumerable<TEntry>)batch).On(onExpression ?? (e => e.Id));
+                                        if (whenMatched != null)
+                                        {
+                                            upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                                        }
+                                        upsertCommandBuilder.Run();
+                                    });
                     });
             }
             catch (PostgresException exception)
