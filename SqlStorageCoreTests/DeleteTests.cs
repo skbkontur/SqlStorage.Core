@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -7,10 +7,11 @@ using FluentAssertions;
 using NUnit.Framework;
 
 using SkbKontur.SqlStorageCore.Tests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestWrappers;
 
 namespace SkbKontur.SqlStorageCore.Tests
 {
-    //[AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
+    [AndSqlStorageCleanUp(typeof(TestValueTypedPropertiesStorageElement))]
     public class DeleteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement, Guid>
     {
         [Test]
