@@ -18,7 +18,7 @@ namespace SkbKontur.SqlStorageCore.Tests.TestUtils
                    .ToArray();
         }
 
-        public static bool IsOurAssemblyFile([NotNull] string fullFileName)
+        public static bool IsOurAssemblyFile(string fullFileName)
         {
             var fileName = Path.GetFileName(fullFileName);
             if (string.IsNullOrEmpty(fileName))

@@ -15,10 +15,9 @@ namespace SkbKontur.SqlStorageCore.Tests.TestEntities
         [UniqueConstraint(groupName : "Ids", order : 1)]
         public Guid SomeId2 { get; set; }
 
-        [CanBeNull]
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
 
         [Required]
-        public string RequiredValue { get; set; }
+        public string? RequiredValue { get; set; }
     }
 }

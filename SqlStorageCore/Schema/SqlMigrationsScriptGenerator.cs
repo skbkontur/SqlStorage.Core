@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using JetBrains.Annotations;
@@ -24,9 +24,9 @@ namespace SkbKontur.SqlStorageCore.Schema
         }
 
         protected override void Generate(
-            [NotNull] CreateTableOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder,
+            CreateTableOperation operation,
+            IModel? model,
+            MigrationCommandListBuilder builder,
             bool terminate)
         {
             var shouldCreateTrigger = operation[SqlAnnotations.EventLogTrigger] is true;
@@ -47,9 +47,9 @@ namespace SkbKontur.SqlStorageCore.Schema
         }
 
         protected override void Generate(
-            [NotNull] RenameTableOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
+            RenameTableOperation operation,
+            IModel? model,
+            MigrationCommandListBuilder builder)
         {
             base.Generate(operation, model, builder);
 
@@ -57,9 +57,9 @@ namespace SkbKontur.SqlStorageCore.Schema
         }
 
         protected override void Generate(
-            [NotNull] RenameColumnOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
+            RenameColumnOperation operation,
+            IModel? model,
+            MigrationCommandListBuilder builder)
         {
             base.Generate(operation, model, builder);
 
@@ -67,16 +67,16 @@ namespace SkbKontur.SqlStorageCore.Schema
         }
 
         protected override void Generate(
-            [NotNull] AddColumnOperation operation,
-            [CanBeNull] IModel model,
-            [NotNull] MigrationCommandListBuilder builder)
+            AddColumnOperation operation,
+            IModel? model,
+            MigrationCommandListBuilder builder)
         {
             base.Generate(operation, model, builder);
 
             ReplaceWriteToEventLogFunctionIfEventLogTableTouched(model, builder, operation.Table);
         }
 
-        private void ReplaceWriteToEventLogFunctionIfEventLogTableTouched([CanBeNull] IModel model, [NotNull] MigrationCommandListBuilder builder, [CanBeNull] string targetTableName)
+        private void ReplaceWriteToEventLogFunctionIfEventLogTableTouched(IModel? model, MigrationCommandListBuilder builder, string? targetTableName)
         {
             var eventLogEntity = FindEventLogEntity(model);
             if (targetTableName == eventLogEntity.Relational().TableName)
@@ -87,8 +87,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             }
         }
 
-        [NotNull]
-        private static IEntityType FindEventLogEntity(IModel model)
+        private static IEntityType FindEventLogEntity(IModel? model)
         {
             var eventLogEntity = model?.FindEntityType(typeof(SqlEventLogEntry));
             if (eventLogEntity == null)
@@ -96,7 +95,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             return eventLogEntity;
         }
 
-        private void AppendTriggerCreation([NotNull] CreateTableOperation operation, [NotNull] MigrationCommandListBuilder builder, [NotNull] IEntityType eventLogEntity)
+        private void AppendTriggerCreation(CreateTableOperation operation, MigrationCommandListBuilder builder, IEntityType eventLogEntity)
         {
             var statementTerminator = Dependencies.SqlGenerationHelper.StatementTerminator;
 
@@ -114,7 +113,7 @@ namespace SkbKontur.SqlStorageCore.Schema
                 .Append($"EXECUTE PROCEDURE {writeToEventLogFunctionName}()").AppendLine(statementTerminator);
         }
 
-        private void AppendCreateOrReplaceWriteToEventLogFunction([NotNull] MigrationCommandListBuilder builder, [NotNull] IEntityType eventLogEntity)
+        private void AppendCreateOrReplaceWriteToEventLogFunction(MigrationCommandListBuilder builder, IEntityType eventLogEntity)
         {
             var statementTerminator = Dependencies.SqlGenerationHelper.StatementTerminator;
             var eventLogTableName = eventLogEntity.Relational().TableName;
@@ -156,7 +155,7 @@ namespace SkbKontur.SqlStorageCore.Schema
                 .AppendLine(statementTerminator);
         }
 
-        private (string ColumnName, string ColumnValueExpression)[] GetActiveColumnsMap([NotNull] IEntityType eventLogEntity, [NotNull] string rowDataVariableName)
+        private (string ColumnName, string ColumnValueExpression)[] GetActiveColumnsMap(IEntityType eventLogEntity, string rowDataVariableName)
         {
             var entityTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityType)).Relational().ColumnName;
             var entityContentColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityContent)).Relational().ColumnName;
@@ -167,7 +166,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             var currentTransactionTimestampTicksExpression = SqlCommonQueriesBuilder.TicksFromTimestamp(SqlCommonQueriesBuilder.CurrentTransactionTimestamp());
             var currentTransactionIdExpression = SqlCommonQueriesBuilder.CurrentTransactionId();
 
-            return new[]
+            return new (string? ColumnName, string ColumnValueExpression)[]
                        {
                            (entityTypeColumnName, "TG_TABLE_NAME"),
                            (entityContentColumnName, rowDataVariableName),
@@ -175,7 +174,8 @@ namespace SkbKontur.SqlStorageCore.Schema
                            (timestampColumnName, currentTransactionTimestampTicksExpression),
                            (transactionIdColumnName, currentTransactionIdExpression),
                        }
-                   .Where(t => !string.IsNullOrEmpty(t.Item1))
+                   .Where(t => !string.IsNullOrEmpty(t.ColumnName))
+                   .Select(t => (t.ColumnName!, t.ColumnValueExpression))
                    .ToArray();
         }
 

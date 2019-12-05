@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using JetBrains.Annotations;
 
@@ -14,10 +14,8 @@ namespace SkbKontur.SqlStorageCore.EventLog
 
         public long EventOffset { get; set; }
 
-        [NotNull]
         public Timestamp EventTimestamp { get; set; }
-
-        [NotNull]
+        
         public TEntity EntitySnapshot { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using JetBrains.Annotations;
 
@@ -13,13 +13,12 @@ namespace SkbKontur.SqlStorageCore.Schema
     [UsedImplicitly]
     public class SqlMigrationsAnnotationProvider : NpgsqlMigrationsAnnotationProvider
     {
-        public SqlMigrationsAnnotationProvider([NotNull] MigrationsAnnotationProviderDependencies dependencies)
+        public SqlMigrationsAnnotationProvider(MigrationsAnnotationProviderDependencies dependencies)
             : base(dependencies)
         {
         }
 
-        [NotNull]
-        public override IEnumerable<IAnnotation> For([NotNull] IEntityType entityType)
+        public override IEnumerable<IAnnotation> For(IEntityType entityType)
         {
             foreach (var annotation in base.For(entityType))
                 yield return annotation;

@@ -8,8 +8,7 @@ namespace SkbKontur.SqlStorageCore
 {
     public static class SqlStorageExtensions
     {
-        [CanBeNull]
-        public static T FindSingleOrDefault<T, TKey>([NotNull] this IConcurrentSqlStorage<T, TKey> storage, [NotNull] Expression<Func<T, bool>> criterion)
+        public static T? FindSingleOrDefault<T, TKey>(this IConcurrentSqlStorage<T, TKey> storage, Expression<Func<T, bool>> criterion)
             where T : class, ISqlEntity<TKey>
         {
             var searchResult = storage.Find(criterion, 2);

@@ -21,7 +21,6 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
     [UsedImplicitly]
     public class TestSqlDatabaseContextFactory : IDesignTimeDbContextFactory<SqlDbContext>
     {
-        [NotNull]
         public SqlDbContext CreateDbContext(string[] args)
         {
             var container = new Container(new ContainerConfiguration(AssembliesLoader.Load(), nameof(TestSqlDatabaseContextFactory), ContainerMode.UseShortLog));

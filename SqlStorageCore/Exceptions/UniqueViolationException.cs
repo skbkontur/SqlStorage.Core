@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 
 namespace SkbKontur.SqlStorageCore.Exceptions
 {
@@ -11,10 +11,8 @@ namespace SkbKontur.SqlStorageCore.Exceptions
             Details = details;
         }
 
-        [NotNull]
         public string Constraint { get; }
 
-        [NotNull]
         public string Details { get; }
     }
 }

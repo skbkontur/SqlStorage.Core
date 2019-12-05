@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 
 using Npgsql;
 
@@ -6,7 +6,7 @@ namespace SkbKontur.SqlStorageCore.Exceptions
 {
     public static class PostgresExceptionRecognizer
     {
-        public static bool TryRecognizeException([NotNull] PostgresException postgresException, out SqlStorageException sqlStorageException)
+        public static bool TryRecognizeException(PostgresException postgresException, out SqlStorageException? sqlStorageException)
         {
             switch (postgresException.SqlState)
             {

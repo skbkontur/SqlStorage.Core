@@ -13,7 +13,6 @@ namespace SkbKontur.SqlStorageCore
             sqlEntityTypes.Add(typeof(T));
         }
 
-        [NotNull, ItemNotNull]
         public IEnumerable<Type> GetEntityTypes()
         {
             return sqlEntityTypes;

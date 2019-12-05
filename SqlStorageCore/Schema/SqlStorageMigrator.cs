@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using JetBrains.Annotations;
@@ -20,44 +20,41 @@ namespace SkbKontur.SqlStorageCore.Schema
             this.logger = logger.ForContext("SqlStorage.Migrator");
         }
 
-        public void Migrate([CanBeNull] string migrationName = null)
+        public void Migrate(string? migrationName = null)
         {
-            using (var context = createDbContext())
+            using var context = createDbContext();
+            var lastAppliedMigration = GetLastAppliedMigrationName(context);
+            try
             {
-                var lastAppliedMigration = GetLastAppliedMigrationName(context);
-                try
-                {
-                    if (migrationName == null)
-                        context.Database.Migrate();
-                    else
-                        context.GetService<IMigrator>().Migrate(migrationName);
-                }
-                catch (Exception e)
-                {
-                    var justAppliedMigration = GetLastAppliedMigrationName(context);
-                    logger.Fatal($"Database migration failed. Last applied migration: {justAppliedMigration}. Exception: {e}");
+                if (migrationName == null)
+                    context.Database.Migrate();
+                else
+                    context.GetService<IMigrator>().Migrate(migrationName);
+            }
+            catch (Exception e)
+            {
+                var justAppliedMigration = GetLastAppliedMigrationName(context);
+                logger.Fatal($"Database migration failed. Last applied migration: {justAppliedMigration}. Exception: {e}");
 
-                    if (justAppliedMigration != lastAppliedMigration)
+                if (justAppliedMigration != lastAppliedMigration)
+                {
+                    logger.Info($"Some migrations were applied. Last just applied migration: {justAppliedMigration}. Starting rollback...");
+                    try
                     {
-                        logger.Info($"Some migrations were applied. Last just applied migration: {justAppliedMigration}. Starting rollback...");
-                        try
-                        {
-                            context.GetService<IMigrator>().Migrate(lastAppliedMigration);
-                        }
-                        catch (Exception rollbackException)
-                        {
-                            logger.Fatal($"Rollback to {lastAppliedMigration} failed. Exception: {rollbackException}");
-                            throw;
-                        }
+                        context.GetService<IMigrator>().Migrate(lastAppliedMigration);
                     }
-
-                    throw;
+                    catch (Exception rollbackException)
+                    {
+                        logger.Fatal($"Rollback to {lastAppliedMigration} failed. Exception: {rollbackException}");
+                        throw;
+                    }
                 }
+
+                throw;
             }
         }
 
-        [CanBeNull]
-        private static string GetLastAppliedMigrationName(SqlDbContext context)
+        private static string? GetLastAppliedMigrationName(SqlDbContext context)
         {
             var appliedMigrations = context.Database.GetAppliedMigrations().ToList();
             return appliedMigrations.OrderBy(m => m).LastOrDefault();

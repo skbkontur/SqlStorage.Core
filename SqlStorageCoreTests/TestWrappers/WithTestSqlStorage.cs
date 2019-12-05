@@ -20,7 +20,7 @@ namespace SkbKontur.SqlStorageCore.Tests.TestWrappers
 {
     public class WithTestSqlStorage : GroboTestSuiteWrapperAttribute
     {
-        public override void SetUp([NotNull] string suiteName, [NotNull] Assembly testAssembly, [NotNull] IEditableGroboTestContext suiteContext)
+        public override void SetUp(string suiteName, Assembly testAssembly, IEditableGroboTestContext suiteContext)
         {
             var container = suiteContext.Container;
             var consoleLog = new ConsoleLog();
