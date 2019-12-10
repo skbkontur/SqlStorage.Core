@@ -29,9 +29,6 @@ namespace SkbKontur.SqlStorageCore.EventLog
         {
             using var context = createDbContext();
             var name = context.Model.FindEntityType(entityType)?.Relational()?.TableName;
-            //if (string.IsNullOrEmpty(name)) 
-
-            //return !string.IsNullOrEmpty(name) ? name : throw new InvalidOperationException($"EventLog entity type name not found for {entityType.Name}");
             return name ?? throw new InvalidOperationException($"EventLog entity type name not found for {entityType.Name}");
         }
 
