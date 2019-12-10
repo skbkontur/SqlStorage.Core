@@ -196,7 +196,8 @@ namespace SkbKontur.SqlStorageCore.Tests
         public void TestWriteAndDeleteAndReadThroughMultipleThreads()
         {
             var objects = GenerateObjects(testObjectsCount).ToArray();
-            var objectToDelete = objects.OrderBy(x => new Random().Next()).Take(testObjectsCount / 3).ToArray();
+            var rnd = new Random();
+            var objectToDelete = objects.OrderBy(x => rnd.Next()).Take(testObjectsCount / 3).ToArray();
             InternalTestWriteAndDeleteAndReadThroughMultipleThreads(objects.ToArray(), objectToDelete.ToArray(), sqlStorage);
         }
 
@@ -204,7 +205,8 @@ namespace SkbKontur.SqlStorageCore.Tests
         public void TestWriteAndDeleteAndReadAll()
         {
             var objects = GenerateObjects(testObjectsCount).ToArray();
-            var objectsToDelete = objects.OrderBy(x => new Random().Next()).Take(testObjectsCount / 3).ToArray();
+            var rnd = new Random();
+            var objectsToDelete = objects.OrderBy(x => rnd.Next()).Take(testObjectsCount / 3).ToArray();
             sqlStorage.CreateOrUpdate(objects);
             sqlStorage.Delete(objectsToDelete.Select(o => o.Id).ToArray());
             var allActualObjects = sqlStorage.ReadAll();
