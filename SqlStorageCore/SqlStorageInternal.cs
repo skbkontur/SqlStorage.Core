@@ -76,27 +76,20 @@ namespace SkbKontur.SqlStorageCore
                 WithDbContext(context =>
                     {
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
-                        var batches = new List<List<TEntry>>();
-                        const int maxBatchCount = 1000;
-                        var currentBatch = new List<TEntry>();
-                        foreach (var entry in entities)
+                        var batches = new List<IEnumerable<TEntry>>();
+                        const int maxElementsInBatch = 1000;
+                        var takenElements = 0;
+                        int shouldAdd;
+                        while (takenElements < entities.Length)
                         {
-                            if (currentBatch.Count == maxBatchCount)
-                            {
-                                batches.Add(currentBatch);
-                                currentBatch = new List<TEntry>();
-                            }
-                            else
-                            {
-                                currentBatch.Add(entry);
-                            }
+                            shouldAdd = Math.Min(maxElementsInBatch, entities.Length - takenElements);
+                            batches.Add(entities.Skip(takenElements).Take(shouldAdd));
+                            takenElements += shouldAdd;
                         }
-                        if (currentBatch.Count > 0)
-                            batches.Add(currentBatch);
 
                         batches.ForEach(batch =>
                                     {
-                                        var upsertCommandBuilder = context.UpsertRange((IEnumerable<TEntry>)batch).On(onExpression ?? (e => e.Id));
+                                        var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
                                         if (whenMatched != null)
                                         {
                                             upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
