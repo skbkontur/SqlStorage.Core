@@ -79,12 +79,10 @@ namespace SkbKontur.SqlStorageCore
                         var batches = new List<IEnumerable<TEntry>>();
                         const int maxElementsInBatch = 1000;
                         var takenElements = 0;
-                        int shouldAdd;
-                        while (takenElements < entities.Length)
+                        while (takenElements < entities.Length) 
                         {
-                            shouldAdd = Math.Min(maxElementsInBatch, entities.Length - takenElements);
-                            batches.Add(entities.Skip(takenElements).Take(shouldAdd));
-                            takenElements += shouldAdd;
+                            batches.Add(entities.Skip(takenElements).Take(maxElementsInBatch));
+                            takenElements += maxElementsInBatch;
                         }
 
                         batches.ForEach(batch =>
