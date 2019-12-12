@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 using SkbKontur.SqlStorageCore.Exceptions;
+using SkbKontur.SqlStorageCore.Linq;
 
 namespace SkbKontur.SqlStorageCore
 {
@@ -76,16 +77,7 @@ namespace SkbKontur.SqlStorageCore
                 WithDbContext(context =>
                     {
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
-                        var batches = new List<IEnumerable<TEntry>>();
-                        const int maxElementsInBatch = 1000;
-                        var takenElements = 0;
-                        while (takenElements < entities.Length) 
-                        {
-                            batches.Add(entities.Skip(takenElements).Take(maxElementsInBatch));
-                            takenElements += maxElementsInBatch;
-                        }
-
-                        batches.ForEach(batch =>
+                        entities.Batch(1000).ForEach(batch =>
                                     {
                                         var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
                                         if (whenMatched != null)
