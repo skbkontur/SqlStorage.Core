@@ -28,6 +28,7 @@ namespace SkbKontur.SqlStorageCore.Tests.TestWrappers
             var sql = $@"TRUNCATE ""{relational.TableName}"";";
 #pragma warning disable EF1000 // Possible SQL injection vulnerability.
             context.Database.ExecuteSqlCommand(sql);
+#pragma warning disable EF1000 // Possible SQL injection vulnerability.
         }
 
         private readonly Type entityType;
