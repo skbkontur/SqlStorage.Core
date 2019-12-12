@@ -11,9 +11,7 @@ using Newtonsoft.Json;
 using SkbKontur.SqlStorageCore.Schema;
 
 namespace SkbKontur.SqlStorageCore.EventLog
-{
-    [UsedImplicitly]
-    public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
+{ public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
         where TEntity : ISqlEntity<TKey>
     {
         public SqlEventLogRepository(IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage, Func<SqlDbContext> createDbContext)

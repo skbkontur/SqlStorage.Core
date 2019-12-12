@@ -8,7 +8,6 @@
 
     <ItemGroup>
         <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="2.1.2" />
-        <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.2" />

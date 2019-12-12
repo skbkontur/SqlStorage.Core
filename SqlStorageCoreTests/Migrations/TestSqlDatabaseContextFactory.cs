@@ -18,7 +18,6 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
     /// <summary>
     ///     Factory used by EntityFrameworkCore.Tools to create migrations
     /// </summary>
-    [UsedImplicitly]
     public class TestSqlDatabaseContextFactory : IDesignTimeDbContextFactory<SqlDbContext>
     {
         public SqlDbContext CreateDbContext(string[] args)
