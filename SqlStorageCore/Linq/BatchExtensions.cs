@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SkbKontur.SqlStorageCore.Linq
 {
-    public static class BatchExtensions
+    internal static class BatchExtensions
     {
         public static List<IEnumerable<T>> Batch<T>(this IEnumerable<T> enumerable, int batchSize)
         {
