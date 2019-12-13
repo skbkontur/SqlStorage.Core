@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -34,20 +36,23 @@ namespace SkbKontur.SqlStorageCore.EventLog
             return name ?? throw new InvalidOperationException($"EventLog entity type name not found for {entityType.Name}");
         }
 
-        public SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit)
+        public async Task<SqlEvent<TEntity>[]> GetEventsAsync(long? fromOffsetExclusive, int limit, CancellationToken cancellationToken = default)
         {
             ValidateOffset(fromOffsetExclusive);
             var searchCriterion = BuildEventsSearchCriterion(fromOffsetExclusive);
-            return eventLogSqlStorage.Find(searchCriterion, e => e.Offset, limit).Select(BuildEntityEvent).ToArray();
+            var eventLogEntries = await eventLogSqlStorage.FindAsync(searchCriterion, e => e.Offset, limit, cancellationToken);
+            return eventLogEntries.Select(BuildEntityEvent).ToArray();
         }
 
-        public int GetEventsCount(long? fromOffsetExclusive)
+        public async Task<int> GetEventsCountAsync(long? fromOffsetExclusive, CancellationToken cancellationToken = default)
         {
             ValidateOffset(fromOffsetExclusive);
 
-            using var context = createDbContext();
-            var predicate = BuildEventsSearchCriterion(fromOffsetExclusive);
-            return context.Set<SqlEventLogEntry>().Count(predicate);
+            using (var context = createDbContext())
+            {
+                var predicate = BuildEventsSearchCriterion(fromOffsetExclusive);
+                return await context.Set<SqlEventLogEntry>().CountAsync(predicate, cancellationToken);
+            }
         }
 
         private Expression<Func<SqlEventLogEntry, bool>> BuildEventsSearchCriterion(long? fromOffsetExclusive)

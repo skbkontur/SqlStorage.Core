@@ -1,11 +1,15 @@
+using System.Threading;
+using System.Threading.Tasks;
+
+
 namespace SkbKontur.SqlStorageCore.EventLog
 {
     public interface ISqlEventLogRepository<TEntity, TKey>
         where TEntity : ISqlEntity<TKey>
         where TKey : notnull
     {
-        SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit);
+        Task<SqlEvent<TEntity>[]> GetEventsAsync(long? fromOffsetExclusive, int limit, CancellationToken cancellationToken = default);
 
-        int GetEventsCount(long? fromOffsetExclusive);
+        Task<int> GetEventsCountAsync(long? fromOffsetExclusive, CancellationToken cancellationToken = default);
     }
 }

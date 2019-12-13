@@ -1,6 +1,8 @@
 using System;
 using System.Data;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SkbKontur.SqlStorageCore
 {
@@ -8,23 +10,23 @@ namespace SkbKontur.SqlStorageCore
         where TEntry : class, ISqlEntity<TKey>
         where TKey : notnull
     {
-        TEntry? TryRead(TKey id);
+        Task<TEntry?> TryReadAsync(TKey id, CancellationToken cancellationToken = default);
 
-        TEntry[] TryRead(TKey[] ids);
+        Task<TEntry[]> TryReadAsync(TKey[] ids, CancellationToken cancellationToken = default);
 
-        TEntry[] ReadAll();
+        Task<TEntry[]> ReadAllAsync(CancellationToken cancellationToken = default);
 
-        void CreateOrUpdate(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null);
-        void CreateOrUpdate(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null);
+        Task CreateOrUpdateAsync(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default);
+        Task CreateOrUpdateAsync(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default);
 
-        void Delete(TKey[] ids);
-        void Delete(TKey id);
-        void Delete(Expression<Func<TEntry, bool>> criterion);
+        Task DeleteAsync(TKey[] ids, CancellationToken cancellationToken = default);
+        Task DeleteAsync(TKey id, CancellationToken cancellationToken = default);
+        Task DeleteAsync(Expression<Func<TEntry, bool>> criterion, CancellationToken cancellationToken = default);
 
-        TEntry[] Find(Expression<Func<TEntry, bool>> criterion, int limit);
+        Task<TEntry[]> FindAsync(Expression<Func<TEntry, bool>> criterion, int limit, CancellationToken cancellationToken = default);
 
-        TEntry[] Find<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit);
+        Task<TEntry[]> FindAsync<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default);
 
-        void Batch(Action<ISqlStorage> batchAction, IsolationLevel isolationLevel);
+        Task BatchAsync(Action<ISqlStorage> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
     }
 }

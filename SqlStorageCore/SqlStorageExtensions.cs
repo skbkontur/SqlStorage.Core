@@ -1,16 +1,18 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SkbKontur.SqlStorageCore
 {
     public static class SqlStorageExtensions
     {
-        public static TEntity? FindSingleOrDefault<TEntity, TKey>(this IConcurrentSqlStorage<TEntity, TKey> storage, Expression<Func<TEntity, bool>> criterion)
+        public static async Task<TEntity?>FindSingleOrDefaultAsync<TEntity, TKey>(this IConcurrentSqlStorage<TEntity, TKey> storage, Expression<Func<TEntity, bool>> criterion, CancellationToken cancellationToken = default)
             where TEntity : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            var searchResult = storage.Find(criterion, 2);
+            var searchResult = await storage.FindAsync(criterion, 2, cancellationToken);
             if (searchResult.Length <= 1)
                 return searchResult.FirstOrDefault();
 

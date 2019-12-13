@@ -1,47 +1,49 @@
 using System;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SkbKontur.SqlStorageCore
 {
     public interface ISqlStorage
     {
-        TEntry? TryRead<TEntry, TKey>(TKey id)
+        Task<TEntry?> TryReadAsync<TEntry, TKey>(TKey id, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        TEntry[] TryRead<TEntry, TKey>(TKey[] ids)
+        Task<TEntry[]> TryReadAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        TEntry[] ReadAll<TEntry, TKey>()
+        Task<TEntry[]> ReadAllAsync<TEntry, TKey>(CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        void CreateOrUpdate<TEntry, TKey>(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
+        Task CreateOrUpdateAsync<TEntry, TKey>(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        void CreateOrUpdate<TEntry, TKey>(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
+        Task CreateOrUpdateAsync<TEntry, TKey>(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        void Delete<TEntry, TKey>(TKey[] ids)
+        Task DeleteAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        void Delete<TEntry, TKey>(TKey id)
+        Task DeleteAsync<TEntry, TKey>(TKey id, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        void Delete<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion)
+        Task DeleteAsync<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        TEntry[] Find<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, int limit)
+        Task<TEntry[]> FindAsync<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, int limit, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
 
-        TEntry[] Find<TEntry, TKey, TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
+        Task<TEntry[]> FindAsync<TEntry, TKey, TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull;
     }

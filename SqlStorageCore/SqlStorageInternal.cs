@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -19,44 +22,47 @@ namespace SkbKontur.SqlStorageCore
             this.disposeContextOnOperationFinish = disposeContextOnOperationFinish;
         }
 
-        public TEntry? TryRead<TEntry, TKey>(TKey id)
+        public async Task<TEntry?> TryReadAsync<TEntry, TKey>(TKey id, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return WithDbContext(context => context.Set<TEntry>().Find(id));
+            return await WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken));
         }
 
-        public TEntry[] TryRead<TEntry, TKey>(TKey[] ids)
+        public async Task<TEntry[]> TryReadAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
             if (!ids.Any())
                 return new TEntry[0];
 
-            return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArray());
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArrayAsync(cancellationToken));
         }
 
-        public TEntry[] ReadAll<TEntry, TKey>()
+        public async Task<TEntry[]> ReadAllAsync<TEntry, TKey>(CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArray());
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArrayAsync(cancellationToken));
         }
 
-        public void CreateOrUpdate<TEntry, TKey>(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
+        public async Task CreateOrUpdateAsync<TEntry, TKey>(TEntry entity,
+                                                            Expression<Func<TEntry, object>>? onExpression = null,
+                                                            Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null,
+                                                            CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
             try
             {
-                WithDbContext(context =>
+                await WithDbContext(async context =>
                     {
                         var upsertCommandBuilder = context.Upsert(entity).On(onExpression ?? (e => e.Id));
                         if (whenMatched != null)
                         {
                             upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
                         }
-                        upsertCommandBuilder.Run();
+                        await upsertCommandBuilder.RunAsync(cancellationToken);
                     });
             }
             catch (PostgresException exception)
@@ -65,7 +71,10 @@ namespace SkbKontur.SqlStorageCore
             }
         }
 
-        public void CreateOrUpdate<TEntry, TKey>(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
+        public async Task CreateOrUpdateAsync<TEntry, TKey>(TEntry[] entities,
+                                                            Expression<Func<TEntry, object>>? onExpression = null,
+                                                            Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null,
+                                                            CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
@@ -73,7 +82,7 @@ namespace SkbKontur.SqlStorageCore
                 return;
             try
             {
-                WithDbContext(context =>
+                await WithDbContext(async context =>
                     {
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
                         entities.Batch(1000).ForEach(batch =>
@@ -93,16 +102,16 @@ namespace SkbKontur.SqlStorageCore
             }
         }
 
-        public void Delete<TEntry, TKey>(TKey[] ids)
+        public async Task DeleteAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
             if (!ids.Any())
                 return;
 
-            WithDbContext(context =>
+            await WithDbContext(async context =>
                 {
-                    var entities = context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArray();
+                    var entities = await context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArrayAsync(cancellationToken);
                     if (entities.Any())
                     {
                         context.Set<TEntry>().RemoveRange(entities);
@@ -111,48 +120,48 @@ namespace SkbKontur.SqlStorageCore
                 });
         }
 
-        public void Delete<TEntry, TKey>(TKey id)
+        public async Task DeleteAsync<TEntry, TKey>(TKey id, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            WithDbContext(context =>
+            await WithDbContext(async context =>
                 {
-                    var entity = context.Set<TEntry>().Find(id);
+                    var entity = await context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken);
                     if (entity != null)
                     {
                         context.Set<TEntry>().Remove(entity);
-                        context.SaveChanges();
+                        await context.SaveChangesAsync(cancellationToken);
                     }
                 });
         }
 
-        public void Delete<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion)
+        public async Task DeleteAsync<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            WithDbContext(context =>
+            await WithDbContext(async context =>
                 {
-                    var entities = context.Set<TEntry>().AsNoTracking().Where(criterion).ToArray();
+                    var entities = await context.Set<TEntry>().AsNoTracking().Where(criterion).ToArrayAsync(cancellationToken);
                     if (entities.Any())
                     {
                         context.Set<TEntry>().RemoveRange(entities);
-                        context.SaveChanges();
+                        await context.SaveChangesAsync(cancellationToken);
                     }
                 });
         }
 
-        public TEntry[] Find<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, int limit)
+        public async Task<TEntry[]> FindAsync<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, int limit, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArray());
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArrayAsync(cancellationToken));
         }
 
-        public TEntry[] Find<TEntry, TKey, TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
+        public async Task<TEntry[]> FindAsync<TEntry, TKey, TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArray());
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArrayAsync(cancellationToken));
         }
 
         private void WithDbContext(Action<SqlDbContext> action)
