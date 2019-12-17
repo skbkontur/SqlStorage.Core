@@ -9,6 +9,7 @@ namespace SkbKontur.SqlStorageCore
 {
     public class ConcurrentSqlStorage<TEntry, TKey> : IConcurrentSqlStorage<TEntry, TKey>
         where TEntry : class, ISqlEntity<TKey>
+        where TKey : notnull
     {
         public ConcurrentSqlStorage(Func<SqlDbContext> createDbContext)
         {

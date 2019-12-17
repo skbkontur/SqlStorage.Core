@@ -21,12 +21,14 @@ namespace SkbKontur.SqlStorageCore
 
         public TEntry? TryRead<TEntry, TKey>(TKey id)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             return WithDbContext(context => context.Set<TEntry>().Find(id));
         }
 
         public TEntry[] TryRead<TEntry, TKey>(TKey[] ids)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             if (!ids.Any())
                 return new TEntry[0];
@@ -36,20 +38,20 @@ namespace SkbKontur.SqlStorageCore
 
         public TEntry[] ReadAll<TEntry, TKey>()
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArray());
         }
 
         public void CreateOrUpdate<TEntry, TKey>(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             try
             {
                 WithDbContext(context =>
                     {
-#pragma warning disable CS8603 // Possible null reference return.
                         var upsertCommandBuilder = context.Upsert(entity).On(onExpression ?? (e => e.Id));
-#pragma warning restore CS8603 // Possible null reference return.
                         if (whenMatched != null)
                         {
                             upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
@@ -65,6 +67,7 @@ namespace SkbKontur.SqlStorageCore
 
         public void CreateOrUpdate<TEntry, TKey>(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             if (!entities.Any())
                 return;
@@ -75,7 +78,7 @@ namespace SkbKontur.SqlStorageCore
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
                         entities.Batch(1000).ForEach(batch =>
                             {
-                                var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id!));
+                                var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
                                 if (whenMatched != null)
                                 {
                                     upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
@@ -92,6 +95,7 @@ namespace SkbKontur.SqlStorageCore
 
         public void Delete<TEntry, TKey>(TKey[] ids)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             if (!ids.Any())
                 return;
@@ -109,6 +113,7 @@ namespace SkbKontur.SqlStorageCore
 
         public void Delete<TEntry, TKey>(TKey id)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             WithDbContext(context =>
                 {
@@ -123,6 +128,7 @@ namespace SkbKontur.SqlStorageCore
 
         public void Delete<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             WithDbContext(context =>
                 {
@@ -137,12 +143,14 @@ namespace SkbKontur.SqlStorageCore
 
         public TEntry[] Find<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, int limit)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArray());
         }
 
         public TEntry[] Find<TEntry, TKey, TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
             where TEntry : class, ISqlEntity<TKey>
+            where TKey : notnull
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArray());
         }

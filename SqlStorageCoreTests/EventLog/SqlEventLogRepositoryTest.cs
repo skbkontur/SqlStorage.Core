@@ -29,6 +29,7 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
     [TestFixture(typeof(TestJsonArrayColumnElement), typeof(Guid))]
     public class SqlEventLogRepositoryTest<TEntity, TKey> : SqlStorageTestBase<TEntity, TKey>
         where TEntity : class, ISqlEntity<TKey>, new()
+        where TKey : notnull
     {
         [GroboSetUp]
         public void SetUp()
@@ -304,15 +305,13 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
 
         private long? GetLastOffset()
         {
-            using (var context = dbContextCreator.Create())
-            {
-                var entityTypeName = context.Model.FindEntityType(typeof(TEntity))?.Relational()?.TableName;
-                Expression<Func<SqlEventLogEntry, bool>> filter = e => e.EntityType == entityTypeName
-                                                                       && e.TransactionId < PostgresFunctions.SnapshotMinimalTransactionId(PostgresFunctions.CurrentTransactionIdsSnapshot());
-                if (!context.Set<SqlEventLogEntry>().Any(filter))
-                    return null;
-                return context.Set<SqlEventLogEntry>().Where(filter).Max(e => e.Offset);
-            }
+            using var context = dbContextCreator.Create();
+            var entityTypeName = context.Model.FindEntityType(typeof(TEntity))?.Relational()?.TableName;
+            Expression<Func<SqlEventLogEntry, bool>> filter = e => e.EntityType == entityTypeName
+                                                                   && e.TransactionId < PostgresFunctions.SnapshotMinimalTransactionId(PostgresFunctions.CurrentTransactionIdsSnapshot());
+            if (!context.Set<SqlEventLogEntry>().Any(filter))
+                return null;
+            return context.Set<SqlEventLogEntry>().Where(filter).Max(e => e.Offset);
         }
 
         private const int testObjectsCount = 100;

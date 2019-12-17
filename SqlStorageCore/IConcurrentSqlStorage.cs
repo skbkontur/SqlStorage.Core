@@ -6,6 +6,7 @@ namespace SkbKontur.SqlStorageCore
 {
     public interface IConcurrentSqlStorage<TEntry, in TKey>
         where TEntry : class, ISqlEntity<TKey>
+        where TKey : notnull
     {
         TEntry? TryRead(TKey id);
 

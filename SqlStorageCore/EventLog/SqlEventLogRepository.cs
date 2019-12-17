@@ -13,6 +13,7 @@ namespace SkbKontur.SqlStorageCore.EventLog
 {
     public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
         where TEntity : ISqlEntity<TKey>
+        where TKey : notnull
     {
         public SqlEventLogRepository(
             IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage,

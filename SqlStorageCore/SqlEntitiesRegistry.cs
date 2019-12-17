@@ -5,10 +5,11 @@ namespace SkbKontur.SqlStorageCore
 {
     public abstract class SqlEntitiesRegistry
     {
-        protected void RegisterEntityType<T, TKey>()
-            where T : ISqlEntity<TKey>
+        protected void RegisterEntityType<TEntity, TKey>()
+            where TEntity : ISqlEntity<TKey>
+            where TKey : notnull
         {
-            sqlEntityTypes.Add(typeof(T));
+            sqlEntityTypes.Add(typeof(TEntity));
         }
 
         public IEnumerable<Type> GetEntityTypes()

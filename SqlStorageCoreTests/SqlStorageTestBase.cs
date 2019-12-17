@@ -15,6 +15,7 @@ namespace SkbKontur.SqlStorageCore.Tests
     [GroboTestSuite, WithTestSqlStorage]
     public abstract class SqlStorageTestBase<TEntity, TKey>
         where TEntity : class, ISqlEntity<TKey>, new()
+        where TKey : notnull
     {
         private static EquivalencyAssertionOptions<T> EquivalenceOptionsConfig<T>(EquivalencyAssertionOptions<T> options)
         {
