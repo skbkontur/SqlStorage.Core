@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-
-using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -22,15 +19,13 @@ namespace SkbKontur.SqlStorageCore
             this.disposeContextOnOperationFinish = disposeContextOnOperationFinish;
         }
 
-        [CanBeNull]
-        public TEntry TryRead<TEntry, TKey>([NotNull] TKey id)
+        public TEntry? TryRead<TEntry, TKey>(TKey id)
             where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().Find(id));
         }
 
-        [NotNull, ItemNotNull]
-        public TEntry[] TryRead<TEntry, TKey>([NotNull, ItemNotNull] TKey[] ids)
+        public TEntry[] TryRead<TEntry, TKey>(TKey[] ids)
             where TEntry : class, ISqlEntity<TKey>
         {
             if (!ids.Any())
@@ -39,21 +34,22 @@ namespace SkbKontur.SqlStorageCore
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArray());
         }
 
-        [NotNull, ItemNotNull]
         public TEntry[] ReadAll<TEntry, TKey>()
             where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArray());
         }
 
-        public void CreateOrUpdate<TEntry, TKey>([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+        public void CreateOrUpdate<TEntry, TKey>(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
             where TEntry : class, ISqlEntity<TKey>
         {
             try
             {
                 WithDbContext(context =>
                     {
+#pragma warning disable CS8603 // Possible null reference return.
                         var upsertCommandBuilder = context.Upsert(entity).On(onExpression ?? (e => e.Id));
+#pragma warning restore CS8603 // Possible null reference return.
                         if (whenMatched != null)
                         {
                             upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
@@ -67,7 +63,7 @@ namespace SkbKontur.SqlStorageCore
             }
         }
 
-        public void CreateOrUpdate<TEntry, TKey>([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null)
+        public void CreateOrUpdate<TEntry, TKey>(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
             where TEntry : class, ISqlEntity<TKey>
         {
             if (!entities.Any())
@@ -78,14 +74,14 @@ namespace SkbKontur.SqlStorageCore
                     {
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
                         entities.Batch(1000).ForEach(batch =>
-                                    {
-                                        var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
-                                        if (whenMatched != null)
-                                        {
-                                            upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
-                                        }
-                                        upsertCommandBuilder.Run();
-                                    });
+                            {
+                                var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id!));
+                                if (whenMatched != null)
+                                {
+                                    upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                                }
+                                upsertCommandBuilder.Run();
+                            });
                     });
             }
             catch (PostgresException exception)
@@ -94,7 +90,7 @@ namespace SkbKontur.SqlStorageCore
             }
         }
 
-        public void Delete<TEntry, TKey>([NotNull, ItemNotNull] TKey[] ids)
+        public void Delete<TEntry, TKey>(TKey[] ids)
             where TEntry : class, ISqlEntity<TKey>
         {
             if (!ids.Any())
@@ -111,7 +107,7 @@ namespace SkbKontur.SqlStorageCore
                 });
         }
 
-        public void Delete<TEntry, TKey>([NotNull] TKey id)
+        public void Delete<TEntry, TKey>(TKey id)
             where TEntry : class, ISqlEntity<TKey>
         {
             WithDbContext(context =>
@@ -125,7 +121,7 @@ namespace SkbKontur.SqlStorageCore
                 });
         }
 
-        public void Delete<TEntry, TKey>([NotNull] Expression<Func<TEntry, bool>> criterion)
+        public void Delete<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion)
             where TEntry : class, ISqlEntity<TKey>
         {
             WithDbContext(context =>
@@ -139,40 +135,46 @@ namespace SkbKontur.SqlStorageCore
                 });
         }
 
-        public TEntry[] Find<TEntry, TKey>([NotNull] Expression<Func<TEntry, bool>> criterion, int limit)
+        public TEntry[] Find<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, int limit)
             where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArray());
         }
 
-        public TEntry[] Find<TEntry, TKey, TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, [NotNull] Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
+        public TEntry[] Find<TEntry, TKey, TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
             where TEntry : class, ISqlEntity<TKey>
         {
             return WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArray());
         }
 
-        private void WithDbContext([NotNull] Action<SqlDbContext> action)
+        private void WithDbContext(Action<SqlDbContext> action)
         {
             if (disposeContextOnOperationFinish)
-                using (var context = createDbContext())
-                    action(context);
+            {
+                using var context = createDbContext();
+                action(context);
+            }
             else
                 action(createDbContext());
         }
 
-        private TResult WithDbContext<TResult>([NotNull] Func<SqlDbContext, TResult> func)
+        private TResult WithDbContext<TResult>(Func<SqlDbContext, TResult> func)
         {
             if (disposeContextOnOperationFinish)
-                using (var context = createDbContext())
-                    return func(context);
+            {
+                using var context = createDbContext();
+                return func(context);
+            }
             return func(createDbContext());
         }
 
-        [NotNull]
-        private static SqlStorageException ToSqlStorageException([NotNull] PostgresException postgresException)
-            => PostgresExceptionRecognizer.TryRecognizeException(postgresException, out var sqlStorageRecognizedException)
-                   ? sqlStorageRecognizedException
-                   : new UnknownSqlStorageException(postgresException);
+        private static SqlStorageException ToSqlStorageException(PostgresException postgresException)
+        {
+            return PostgresExceptionRecognizer.TryRecognizeException(postgresException, out var sqlStorageRecognizedException)
+                   && sqlStorageRecognizedException != null
+                       ? sqlStorageRecognizedException
+                       : new UnknownSqlStorageException(postgresException);
+        }
 
         private readonly Func<SqlDbContext> createDbContext;
         private readonly bool disposeContextOnOperationFinish;

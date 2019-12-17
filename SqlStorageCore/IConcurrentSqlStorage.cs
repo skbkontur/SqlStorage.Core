@@ -1,36 +1,29 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq.Expressions;
-
-using JetBrains.Annotations;
 
 namespace SkbKontur.SqlStorageCore
 {
     public interface IConcurrentSqlStorage<TEntry, in TKey>
         where TEntry : class, ISqlEntity<TKey>
     {
-        [CanBeNull]
-        TEntry TryRead(TKey id);
+        TEntry? TryRead(TKey id);
 
-        [NotNull, ItemNotNull]
-        TEntry[] TryRead([NotNull] TKey[] ids);
+        TEntry[] TryRead(TKey[] ids);
 
-        [NotNull, ItemNotNull]
         TEntry[] ReadAll();
 
-        void CreateOrUpdate([NotNull] TEntry entity, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null);
-        void CreateOrUpdate([NotNull, ItemNotNull] TEntry[] entities, [CanBeNull] Expression<Func<TEntry, object>> onExpression = null, [CanBeNull] Expression<Func<TEntry, TEntry, TEntry>> whenMatched = null);
+        void CreateOrUpdate(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null);
+        void CreateOrUpdate(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null);
 
-        void Delete([NotNull] TKey[] ids);
+        void Delete(TKey[] ids);
         void Delete(TKey id);
-        void Delete([NotNull] Expression<Func<TEntry, bool>> criterion);
+        void Delete(Expression<Func<TEntry, bool>> criterion);
 
-        [NotNull, ItemNotNull]
-        TEntry[] Find([NotNull] Expression<Func<TEntry, bool>> criterion, int limit);
+        TEntry[] Find(Expression<Func<TEntry, bool>> criterion, int limit);
 
-        [NotNull, ItemNotNull]
-        TEntry[] Find<TOrderProp>([NotNull] Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit);
+        TEntry[] Find<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit);
 
-        void Batch([NotNull] Action<ISqlStorage> batchAction, IsolationLevel isolationLevel);
+        void Batch(Action<ISqlStorage> batchAction, IsolationLevel isolationLevel);
     }
 }

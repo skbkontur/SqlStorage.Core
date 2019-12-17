@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore
 {
     public abstract class SqlEntitiesRegistry
@@ -13,7 +11,6 @@ namespace SkbKontur.SqlStorageCore
             sqlEntityTypes.Add(typeof(T));
         }
 
-        [NotNull, ItemNotNull]
         public IEnumerable<Type> GetEntityTypes()
         {
             return sqlEntityTypes;

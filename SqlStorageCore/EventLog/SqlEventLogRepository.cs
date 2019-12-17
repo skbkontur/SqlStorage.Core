@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
-
-using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +10,6 @@ using SkbKontur.SqlStorageCore.Schema;
 
 namespace SkbKontur.SqlStorageCore.EventLog
 {
-    [UsedImplicitly]
     public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
         where TEntity : ISqlEntity<TKey>
     {
@@ -24,27 +21,21 @@ namespace SkbKontur.SqlStorageCore.EventLog
             entityTypeName = GetEventLogEntityTypeName(createDbContext, entityType);
         }
 
-        [NotNull]
-        private static string GetEventLogEntityTypeName([NotNull] Func<SqlDbContext> createDbContext, [NotNull] Type entityType)
+        private static string GetEventLogEntityTypeName(Func<SqlDbContext> createDbContext, Type entityType)
         {
-            using (var context = createDbContext())
-            {
-                var name = context.Model.FindEntityType(entityType)?.Relational()?.TableName;
-                if (string.IsNullOrEmpty(name))
-                    throw new InvalidOperationException($"EventLog entity type name not found for {entityType.Name}");
-                return name;
-            }
+            using var context = createDbContext();
+            var name = context.Model.FindEntityType(entityType)?.Relational()?.TableName;
+            return name ?? throw new InvalidOperationException($"EventLog entity type name not found for {entityType.Name}");
         }
 
-        [NotNull, ItemNotNull]
-        public SqlEvent<TEntity>[] GetEvents([CanBeNull] long? fromOffsetExclusive, int limit)
+        public SqlEvent<TEntity>[] GetEvents(long? fromOffsetExclusive, int limit)
         {
             ValidateOffset(fromOffsetExclusive);
             var searchCriterion = BuildEventsSearchCriterion(fromOffsetExclusive);
             return eventLogSqlStorage.Find(searchCriterion, e => e.Offset, limit).Select(BuildEntityEvent).ToArray();
         }
 
-        public int GetEventsCount([CanBeNull] long? fromOffsetExclusive)
+        public int GetEventsCount(long? fromOffsetExclusive)
         {
             ValidateOffset(fromOffsetExclusive);
 
@@ -55,8 +46,7 @@ namespace SkbKontur.SqlStorageCore.EventLog
             }
         }
 
-        [NotNull]
-        private Expression<Func<SqlEventLogEntry, bool>> BuildEventsSearchCriterion([CanBeNull] long? fromOffsetExclusive)
+        private Expression<Func<SqlEventLogEntry, bool>> BuildEventsSearchCriterion(long? fromOffsetExclusive)
         {
             Expression<Func<SqlEventLogEntry, bool>> searchCriterion;
             if (fromOffsetExclusive.HasValue)
@@ -69,7 +59,7 @@ namespace SkbKontur.SqlStorageCore.EventLog
             return searchCriterion;
         }
 
-        private void ValidateOffset([CanBeNull] long? offset)
+        private void ValidateOffset(long? offset)
         {
             if (offset == null)
                 return;
@@ -77,8 +67,7 @@ namespace SkbKontur.SqlStorageCore.EventLog
                 throw new ArgumentOutOfRangeException(nameof(offset), offset.Value, "Must be non-negative");
         }
 
-        [NotNull]
-        private static SqlEvent<TEntity> BuildEntityEvent([NotNull] SqlEventLogEntry e)
+        private static SqlEvent<TEntity> BuildEntityEvent(SqlEventLogEntry e)
         {
             var entitySnapshot = JsonConvert.DeserializeObject<TEntity>(e.EntityContent);
             return new SqlEvent<TEntity>
@@ -91,7 +80,7 @@ namespace SkbKontur.SqlStorageCore.EventLog
                 };
         }
 
-        private static SqlEventType ParseEntityEventType([CanBeNull] string eventType)
+        private static SqlEventType ParseEntityEventType(string? eventType)
         {
             switch (eventType)
             {
@@ -109,7 +98,6 @@ namespace SkbKontur.SqlStorageCore.EventLog
         private readonly IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage;
         private readonly Func<SqlDbContext> createDbContext;
 
-        [NotNull]
         private readonly string entityTypeName;
     }
 }

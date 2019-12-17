@@ -1,7 +1,5 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
-
-using JetBrains.Annotations;
 
 namespace SkbKontur.SqlStorageCore.Schema
 {
@@ -13,14 +11,13 @@ namespace SkbKontur.SqlStorageCore.Schema
         {
         }
 
-        public UniqueConstraintAttribute([CanBeNull] string groupName, int order)
+        public UniqueConstraintAttribute(string? groupName, int order)
         {
             GroupName = groupName;
             Order = order;
         }
 
-        [CanBeNull]
-        public string GroupName { get; }
+        public string? GroupName { get; }
 
         public int Order { get; }
     }

@@ -16,8 +16,6 @@ namespace SkbKontur.SqlStorageCore.Tests
     public abstract class SqlStorageTestBase<TEntity, TKey>
         where TEntity : class, ISqlEntity<TKey>, new()
     {
-        protected readonly Func<EquivalencyAssertionOptions<TEntity>, EquivalencyAssertionOptions<TEntity>> equivalenceOptionsConfig = EquivalenceOptionsConfig;
-
         private static EquivalencyAssertionOptions<T> EquivalenceOptionsConfig<T>(EquivalencyAssertionOptions<T> options)
         {
             return options.Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation, 1)).WhenTypeIs<DateTime>();
@@ -32,6 +30,8 @@ namespace SkbKontur.SqlStorageCore.Tests
         {
             actualObjects.Should().BeEquivalentTo(objects, EquivalenceOptionsConfig);
         }
+
+        protected readonly Func<EquivalencyAssertionOptions<TEntity>, EquivalencyAssertionOptions<TEntity>> equivalenceOptionsConfig = EquivalenceOptionsConfig;
 
         [Injected]
         protected readonly IConcurrentSqlStorage<TEntity, TKey> sqlStorage;

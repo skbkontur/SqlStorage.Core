@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using JetBrains.Annotations;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -17,10 +15,7 @@ namespace SkbKontur.SqlStorageCore.Schema
 {
     public static class EntityTypeBuilderExtensions
     {
-        private static readonly ValueConverter<Timestamp, long> timestampConverter = new ValueConverter<Timestamp, long>(timestamp => timestamp.Ticks, l => new Timestamp(l));
-
-        [NotNull]
-        public static EntityTypeBuilder ApplyTimestampConverter([NotNull] this EntityTypeBuilder entityTypeBuilder)
+        public static EntityTypeBuilder ApplyTimestampConverter(this EntityTypeBuilder entityTypeBuilder)
         {
             var timestampProperties = entityTypeBuilder
                                       .Metadata
@@ -38,8 +33,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             return entityTypeBuilder;
         }
 
-        [NotNull]
-        public static EntityTypeBuilder ApplyJsonColumns([NotNull] this EntityTypeBuilder entityTypeBuilder)
+        public static EntityTypeBuilder ApplyJsonColumns(this EntityTypeBuilder entityTypeBuilder)
         {
             var jsonColumnProperties = ExtractPropertiesMappedWithAttribute<JsonColumnAttribute>(entityTypeBuilder);
             foreach (var (propertyInfo, _) in jsonColumnProperties)
@@ -58,8 +52,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             return entityTypeBuilder;
         }
 
-        [NotNull]
-        private static IEnumerable<(PropertyInfo Property, TAttribute[] Attributes)> ExtractPropertiesMappedWithAttribute<TAttribute>([NotNull] EntityTypeBuilder entityTypeBuilder)
+        private static IEnumerable<(PropertyInfo Property, TAttribute[] Attributes)> ExtractPropertiesMappedWithAttribute<TAttribute>(EntityTypeBuilder entityTypeBuilder)
             where TAttribute : Attribute
         {
             var jsonColumnProperties = entityTypeBuilder
@@ -72,15 +65,13 @@ namespace SkbKontur.SqlStorageCore.Schema
             return jsonColumnProperties;
         }
 
-        [NotNull]
-        public static EntityTypeBuilder HasEventLogWriteTrigger([NotNull] this EntityTypeBuilder entityTypeBuilder)
+        public static EntityTypeBuilder HasEventLogWriteTrigger(this EntityTypeBuilder entityTypeBuilder)
         {
             entityTypeBuilder.Metadata.SetAnnotation(SqlAnnotations.EventLogTrigger, true);
             return entityTypeBuilder;
         }
 
-        [NotNull]
-        public static EntityTypeBuilder ApplyIndices([NotNull] this EntityTypeBuilder entityTypeBuilder)
+        public static EntityTypeBuilder ApplyIndices(this EntityTypeBuilder entityTypeBuilder)
         {
             var indexedProperties = ExtractPropertiesMappedWithAttribute<IndexedColumnAttribute>(entityTypeBuilder);
             foreach (var (property, attributes) in indexedProperties)
@@ -93,7 +84,6 @@ namespace SkbKontur.SqlStorageCore.Schema
             return entityTypeBuilder;
         }
 
-        [NotNull]
         private static string ToNpgsqlIndexName(IndexType indexType)
         {
             switch (indexType)
@@ -109,8 +99,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             }
         }
 
-        [NotNull]
-        public static EntityTypeBuilder ApplyUniqueConstraints([NotNull] this EntityTypeBuilder entityTypeBuilder)
+        public static EntityTypeBuilder ApplyUniqueConstraints(this EntityTypeBuilder entityTypeBuilder)
         {
             var uniqueProperties = ExtractPropertiesMappedWithAttribute<UniqueConstraintAttribute>(entityTypeBuilder);
             var uniqueGroups = uniqueProperties.SelectMany(t => t.Attributes.Select(a => (GroupName : a.GroupName ?? t.Property.Name, a.Order, PropertyName : t.Property.Name)))
@@ -123,5 +112,7 @@ namespace SkbKontur.SqlStorageCore.Schema
 
             return entityTypeBuilder;
         }
+
+        private static readonly ValueConverter<Timestamp, long> timestampConverter = new ValueConverter<Timestamp, long>(timestamp => timestamp.Ticks, l => new Timestamp(l));
     }
 }

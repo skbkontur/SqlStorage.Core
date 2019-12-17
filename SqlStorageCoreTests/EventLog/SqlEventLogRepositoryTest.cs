@@ -10,8 +10,6 @@ using FluentAssertions;
 
 using GroboContainer.NUnitExtensions;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 
 using MoreLinq;
@@ -239,28 +237,6 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
             eventLogRepository.GetEventsCount(fromOffsetExclusive : farFutureOffset).Should().Be(0);
         }
 
-        // ReSharper disable StaticMemberInGenericType
-        private static readonly IsolationLevel[] supportedIsolationLevels =
-            {
-                IsolationLevel.ReadCommitted,
-                IsolationLevel.ReadUncommitted,
-                IsolationLevel.RepeatableRead,
-                IsolationLevel.Serializable,
-                IsolationLevel.Snapshot,
-                IsolationLevel.Unspecified,
-            };
-
-        private static readonly IsolationLevel[][] supportedTransactionIsolationLevelsCartesian = supportedIsolationLevels
-            .SelectMany(first => supportedIsolationLevels.Select(second => new[] {first, second}))
-            .ToArray();
-
-        // ReSharper restore StaticMemberInGenericType
-
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly object[][] testParallelTransactionsOrderingSource = new[] {true, false}
-            .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
-            .ToArray();
-
         [TestCaseSource(nameof(testParallelTransactionsOrderingSource))]
         public async Task TestOffsetOrderingParallelTransactions(IsolationLevel firstTransactionIsolationLevel, IsolationLevel secondTransactionIsolationLevel, bool withPrecedingEvents)
         {
@@ -291,11 +267,6 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
             events.Length.Should().Be(3);
             events.Should().BeInAscendingOrder(e => e.EventOffset);
         }
-
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly object[][] testParallelTransactionsCountSource = new[] {true, false}
-            .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
-            .ToArray();
 
         [TestCaseSource(nameof(testParallelTransactionsCountSource))]
         public async Task TestGetEventsCountParallelTransactions(IsolationLevel firstTransactionIsolationLevel, IsolationLevel secondTransactionIsolationLevel, bool withPrecedingEvents)
@@ -344,9 +315,9 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
             }
         }
 
-        private long? initialOffset;
-
         private const int testObjectsCount = 100;
+
+        private long? initialOffset;
 
         [Injected]
         private readonly ISqlEventLogRepository<TEntity, TKey> eventLogRepository;
@@ -354,7 +325,6 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         [Injected]
         private readonly DbContextCreator dbContextCreator;
 
-        [UsedImplicitly]
         private class DbContextCreator
         {
             public DbContextCreator(Func<SqlDbContext> createDbContext)
@@ -369,5 +339,30 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
 
             private readonly Func<SqlDbContext> createDbContext;
         }
+
+        // ReSharper disable StaticMemberInGenericType
+        private static readonly IsolationLevel[] supportedIsolationLevels =
+            {
+                IsolationLevel.ReadCommitted,
+                IsolationLevel.ReadUncommitted,
+                IsolationLevel.RepeatableRead,
+                IsolationLevel.Serializable,
+                IsolationLevel.Snapshot,
+                IsolationLevel.Unspecified,
+            };
+
+        private static readonly IsolationLevel[][] supportedTransactionIsolationLevelsCartesian = supportedIsolationLevels
+                                                                                                  .SelectMany(first => supportedIsolationLevels.Select(second => new[] {first, second}))
+                                                                                                  .ToArray();
+
+        private static readonly object[][] testParallelTransactionsOrderingSource = new[] {true, false}
+                                                                                    .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
+                                                                                    .ToArray();
+
+        private static readonly object[][] testParallelTransactionsCountSource = new[] {true, false}
+                                                                                 .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
+                                                                                 .ToArray();
+
+        // ReSharper restore StaticMemberInGenericType
     }
 }

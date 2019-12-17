@@ -1,5 +1,3 @@
-﻿using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging;
@@ -13,13 +11,13 @@ namespace SkbKontur.SqlStorageCore
 {
     public sealed class SqlDbContext : DbContext
     {
-        public SqlDbContext([NotNull] ISqlDbContextSettings settings, [NotNull] ILoggerFactory loggerFactory)
+        public SqlDbContext(ISqlDbContextSettings settings, ILoggerFactory loggerFactory)
         {
             this.settings = settings;
             this.loggerFactory = loggerFactory;
         }
 
-        protected override void OnConfiguring([NotNull] DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var connectionString = new NpgsqlConnectionStringBuilder
                 {
@@ -43,7 +41,7 @@ namespace SkbKontur.SqlStorageCore
             optionsBuilder.UseLoggerFactory(loggerFactory);
         }
 
-        protected override void OnModelCreating([NotNull] ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureEventLog(modelBuilder);
 
@@ -58,7 +56,7 @@ namespace SkbKontur.SqlStorageCore
             }
         }
 
-        private void ConfigureEventLog([NotNull] ModelBuilder modelBuilder)
+        private void ConfigureEventLog(ModelBuilder modelBuilder)
         {
             modelBuilder.HasPostgresExtension("uuid-ossp");
             modelBuilder.HasDbFunction(() => PostgresFunctions.CurrentTransactionIdsSnapshot());

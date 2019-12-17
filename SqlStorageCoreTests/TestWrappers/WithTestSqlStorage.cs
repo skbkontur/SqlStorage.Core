@@ -3,8 +3,6 @@ using System.Reflection;
 using GroboContainer.NUnitExtensions;
 using GroboContainer.NUnitExtensions.Impl.TestContext;
 
-using JetBrains.Annotations;
-
 using Microsoft.Extensions.Logging;
 
 using SkbKontur.SqlStorageCore.Schema;
@@ -20,7 +18,7 @@ namespace SkbKontur.SqlStorageCore.Tests.TestWrappers
 {
     public class WithTestSqlStorage : GroboTestSuiteWrapperAttribute
     {
-        public override void SetUp([NotNull] string suiteName, [NotNull] Assembly testAssembly, [NotNull] IEditableGroboTestContext suiteContext)
+        public override void SetUp(string suiteName, Assembly testAssembly, IEditableGroboTestContext suiteContext)
         {
             var container = suiteContext.Container;
             var consoleLog = new ConsoleLog();

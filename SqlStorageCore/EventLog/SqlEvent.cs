@@ -1,6 +1,4 @@
-﻿using System;
-
-using JetBrains.Annotations;
+using System;
 
 using SkbKontur.Cassandra.TimeBasedUuid;
 
@@ -14,10 +12,8 @@ namespace SkbKontur.SqlStorageCore.EventLog
 
         public long EventOffset { get; set; }
 
-        [NotNull]
         public Timestamp EventTimestamp { get; set; }
 
-        [NotNull]
         public TEntity EntitySnapshot { get; set; }
     }
 }
