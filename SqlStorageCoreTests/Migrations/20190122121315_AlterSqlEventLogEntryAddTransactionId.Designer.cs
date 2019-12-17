@@ -61,7 +61,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
 
                     b.ToTable("TestBatchStorageElement");
 
-                    b.HasAnnotation("EDI:EventLogTrigger", true);
+                    b.HasAnnotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
                 });
 
             modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestJsonArrayColumnElement", b =>
@@ -76,7 +76,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
 
                     b.ToTable("TestJsonArrayColumnElement");
 
-                    b.HasAnnotation("EDI:EventLogTrigger", true);
+                    b.HasAnnotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
                 });
 
             modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestJsonColumnElement", b =>
@@ -91,7 +91,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
 
                     b.ToTable("TestJsonColumnElement");
 
-                    b.HasAnnotation("EDI:EventLogTrigger", true);
+                    b.HasAnnotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
                 });
 
             modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestTimestampElement", b =>
@@ -104,7 +104,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
 
                     b.ToTable("TestTimestampElement");
 
-                    b.HasAnnotation("EDI:EventLogTrigger", true);
+                    b.HasAnnotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
                 });
 
             modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestUpsertSqlEntry", b =>
@@ -127,7 +127,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
 
                     b.ToTable("TestUpsertSqlEntry");
 
-                    b.HasAnnotation("EDI:EventLogTrigger", true);
+                    b.HasAnnotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
                 });
 
             modelBuilder.Entity("SkbKontur.SqlStorageCore.Tests.TestEntities.TestValueTypedPropertiesStorageElement", b =>
@@ -146,7 +146,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
 
                     b.ToTable("TestValueTypedPropertiesStorageElement");
 
-                    b.HasAnnotation("EDI:EventLogTrigger", true);
+                    b.HasAnnotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
                 });
 #pragma warning restore 612, 618
         }

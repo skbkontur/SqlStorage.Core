@@ -33,16 +33,17 @@ namespace SkbKontur.SqlStorageCore.Schema
             return entityTypeBuilder;
         }
 
-        public static EntityTypeBuilder ApplyJsonColumns(this EntityTypeBuilder entityTypeBuilder)
+        public static EntityTypeBuilder ApplyJsonColumns(this EntityTypeBuilder entityTypeBuilder, JsonConverter[]? jsonConverters = null)
         {
+            var jsonSerializerSettings = new JsonSerializerSettings {Converters = jsonConverters};
             var jsonColumnProperties = ExtractPropertiesMappedWithAttribute<JsonColumnAttribute>(entityTypeBuilder);
             foreach (var (propertyInfo, _) in jsonColumnProperties)
             {
                 var converter = new RuntimeValueConverter(
                     propertyInfo.PropertyType,
                     typeof(string),
-                    o => JsonConvert.SerializeObject(o),
-                    o => JsonConvert.DeserializeObject(o as string, propertyInfo.PropertyType));
+                    o => JsonConvert.SerializeObject(o, jsonSerializerSettings),
+                    o => JsonConvert.DeserializeObject(o as string, propertyInfo.PropertyType, jsonSerializerSettings));
                 entityTypeBuilder
                     .Property(propertyInfo.PropertyType, propertyInfo.Name)
                     .HasColumnType("json")
@@ -86,17 +87,13 @@ namespace SkbKontur.SqlStorageCore.Schema
 
         private static string ToNpgsqlIndexName(IndexType indexType)
         {
-            switch (indexType)
-            {
-            case IndexType.BTree:
-                return "b-tree";
-            case IndexType.Hash:
-                return "hash";
-            case IndexType.Brin:
-                return "brin";
-            default:
-                throw new ArgumentOutOfRangeException(nameof(indexType), indexType, "Unsupported index type");
-            }
+            return indexType switch
+                {
+                    IndexType.BTree => "b-tree",
+                    IndexType.Hash => "hash",
+                    IndexType.Brin => "brin",
+                    _ => throw new ArgumentOutOfRangeException(nameof(indexType), indexType, "Unsupported index type")
+                };
         }
 
         public static EntityTypeBuilder ApplyUniqueConstraints(this EntityTypeBuilder entityTypeBuilder)

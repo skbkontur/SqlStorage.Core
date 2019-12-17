@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -41,7 +41,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                 {
                     table.PrimaryKey("PK_TestJsonArrayColumnElement", x => x.Id);
                 })
-                .Annotation("EDI:EventLogTrigger", true);
+                .Annotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
 
             migrationBuilder.CreateTable(
                 name: "TestJsonColumnElement",
@@ -54,7 +54,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                 {
                     table.PrimaryKey("PK_TestJsonColumnElement", x => x.Id);
                 })
-                .Annotation("EDI:EventLogTrigger", true);
+                .Annotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
 
             migrationBuilder.CreateTable(
                 name: "TestTimestampElement",
@@ -67,7 +67,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                 {
                     table.PrimaryKey("PK_TestTimestampElement", x => x.Id);
                 })
-                .Annotation("EDI:EventLogTrigger", true);
+                .Annotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
 
             migrationBuilder.CreateTable(
                 name: "TestValueTypedPropertiesStorageElement",
@@ -83,7 +83,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                 {
                     table.PrimaryKey("PK_TestValueTypedPropertiesStorageElement", x => x.Id);
                 })
-                .Annotation("EDI:EventLogTrigger", true);
+                .Annotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SqlEventLogEntry_Offset",

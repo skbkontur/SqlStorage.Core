@@ -1,4 +1,4 @@
-﻿namespace SkbKontur.SqlStorageCore.Schema
+namespace SkbKontur.SqlStorageCore.Schema
 {
     public enum IndexType
     {

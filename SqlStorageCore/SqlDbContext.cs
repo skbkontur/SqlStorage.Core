@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 
 using SkbKontur.SqlStorageCore.EventLog;
+using SkbKontur.SqlStorageCore.Json;
 using SkbKontur.SqlStorageCore.Schema;
 
 namespace SkbKontur.SqlStorageCore
@@ -44,13 +45,13 @@ namespace SkbKontur.SqlStorageCore
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureEventLog(modelBuilder);
-
+            var jsonConverters = CustomJsonConvertersBuilder.Build(settings.CustomJsonConverters);
             foreach (var type in settings.SqlEntitiesRegistry.GetEntityTypes())
             {
                 modelBuilder
                     .Entity(type)
                     .ApplyTimestampConverter()
-                    .ApplyJsonColumns()
+                    .ApplyJsonColumns(jsonConverters)
                     .ApplyIndices()
                     .ApplyUniqueConstraints();
             }

@@ -3,6 +3,8 @@ using System.Reflection;
 
 using GroboContainer.Infection;
 
+using Newtonsoft.Json;
+
 namespace SkbKontur.SqlStorageCore.Tests.TestUtils
 {
     [IgnoredImplementation]
@@ -17,18 +19,20 @@ namespace SkbKontur.SqlStorageCore.Tests.TestUtils
 
         public string Host { get; } = IPAddress.Loopback.ToString();
 
-        public int? Port { get; } = null;
+        public int? Port => null;
 
-        public string Username { get; } = "postgres";
+        public string Username => "postgres";
 
         public string Password { get; } = "postgres";
 
         public string Database { get; }
 
-        public int MaxRetryRequestOnFailureCount { get; } = 6;
+        public int MaxRetryRequestOnFailureCount => 6;
 
         public SqlEntitiesRegistry SqlEntitiesRegistry { get; }
 
         public Assembly? MigrationsAssembly { get; }
+
+        public JsonConverter[]? CustomJsonConverters => null;
     }
 }

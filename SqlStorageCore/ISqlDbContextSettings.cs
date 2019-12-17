@@ -1,5 +1,7 @@
 using System.Reflection;
 
+using Newtonsoft.Json;
+
 namespace SkbKontur.SqlStorageCore
 {
     public interface ISqlDbContextSettings
@@ -19,5 +21,7 @@ namespace SkbKontur.SqlStorageCore
         SqlEntitiesRegistry SqlEntitiesRegistry { get; }
 
         Assembly? MigrationsAssembly { get; }
+
+        JsonConverter[]? CustomJsonConverters { get; }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
 
+using SkbKontur.SqlStorageCore.Json;
 using SkbKontur.SqlStorageCore.Schema;
 
 namespace SkbKontur.SqlStorageCore.EventLog
@@ -13,10 +14,14 @@ namespace SkbKontur.SqlStorageCore.EventLog
     public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
         where TEntity : ISqlEntity<TKey>
     {
-        public SqlEventLogRepository(IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage, Func<SqlDbContext> createDbContext)
+        public SqlEventLogRepository(
+            IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage,
+            Func<SqlDbContext> createDbContext,
+            ISqlDbContextSettings sqlDbContextSettings)
         {
             this.eventLogSqlStorage = eventLogSqlStorage;
             this.createDbContext = createDbContext;
+            customJsonConverters = CustomJsonConvertersBuilder.Build(sqlDbContextSettings.CustomJsonConverters);
             var entityType = typeof(TEntity);
             entityTypeName = GetEventLogEntityTypeName(createDbContext, entityType);
         }
@@ -39,11 +44,9 @@ namespace SkbKontur.SqlStorageCore.EventLog
         {
             ValidateOffset(fromOffsetExclusive);
 
-            using (var context = createDbContext())
-            {
-                var predicate = BuildEventsSearchCriterion(fromOffsetExclusive);
-                return context.Set<SqlEventLogEntry>().Count(predicate);
-            }
+            using var context = createDbContext();
+            var predicate = BuildEventsSearchCriterion(fromOffsetExclusive);
+            return context.Set<SqlEventLogEntry>().Count(predicate);
         }
 
         private Expression<Func<SqlEventLogEntry, bool>> BuildEventsSearchCriterion(long? fromOffsetExclusive)
@@ -67,9 +70,9 @@ namespace SkbKontur.SqlStorageCore.EventLog
                 throw new ArgumentOutOfRangeException(nameof(offset), offset.Value, "Must be non-negative");
         }
 
-        private static SqlEvent<TEntity> BuildEntityEvent(SqlEventLogEntry e)
+        private SqlEvent<TEntity> BuildEntityEvent(SqlEventLogEntry e)
         {
-            var entitySnapshot = JsonConvert.DeserializeObject<TEntity>(e.EntityContent);
+            var entitySnapshot = JsonConvert.DeserializeObject<TEntity>(e.EntityContent, customJsonConverters);
             return new SqlEvent<TEntity>
                 {
                     EventId = e.Id,
@@ -80,24 +83,18 @@ namespace SkbKontur.SqlStorageCore.EventLog
                 };
         }
 
-        private static SqlEventType ParseEntityEventType(string? eventType)
-        {
-            switch (eventType)
-            {
-            case "INSERT":
-                return SqlEventType.Create;
-            case "UPDATE":
-                return SqlEventType.Update;
-            case "DELETE":
-                return SqlEventType.Delete;
-            default:
-                throw new ArgumentOutOfRangeException($"Unknown sql event type: {eventType}");
-            }
-        }
+        private static SqlEventType ParseEntityEventType(string? eventType) =>
+            eventType switch
+                {
+                    "INSERT" => SqlEventType.Create,
+                    "UPDATE" => SqlEventType.Update,
+                    "DELETE" => SqlEventType.Delete,
+                    _ => throw new ArgumentOutOfRangeException($"Unknown sql event type: {eventType}")
+                };
 
         private readonly IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage;
         private readonly Func<SqlDbContext> createDbContext;
-
+        private readonly JsonConverter[] customJsonConverters;
         private readonly string entityTypeName;
     }
 }

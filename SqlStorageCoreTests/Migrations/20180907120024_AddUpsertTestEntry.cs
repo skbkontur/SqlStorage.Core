@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -21,7 +21,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                 {
                     table.PrimaryKey("PK_TestUpsertSqlEntry", x => x.Id);
                 })
-                .Annotation("EDI:EventLogTrigger", true);
+                .Annotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_TestUpsertSqlEntry_SomeId1_SomeId2",

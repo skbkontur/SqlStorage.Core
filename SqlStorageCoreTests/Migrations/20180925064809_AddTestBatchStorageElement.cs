@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -26,7 +26,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
                         Value = table.Column<string>(nullable : true)
                     },
                 constraints : table => { table.PrimaryKey("PK_TestBatchStorageElement", x => x.Id); })
-                            .Annotation("EDI:EventLogTrigger", true);
+                            .Annotation("SkbKontur.SqlStorageCore:EventLogTrigger", true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
