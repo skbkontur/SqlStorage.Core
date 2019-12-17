@@ -1,8 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-using JetBrains.Annotations;
-
 using SkbKontur.SqlStorageCore.Schema;
 
 namespace SkbKontur.SqlStorageCore.Tests.TestEntities

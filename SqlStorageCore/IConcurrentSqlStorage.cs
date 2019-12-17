@@ -2,8 +2,6 @@ using System;
 using System.Data;
 using System.Linq.Expressions;
 
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore
 {
     public interface IConcurrentSqlStorage<TEntry, in TKey>

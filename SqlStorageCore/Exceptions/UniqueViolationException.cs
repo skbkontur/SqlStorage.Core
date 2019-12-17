@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore.Exceptions
 {
     public sealed class UniqueViolationException : SqlStorageException

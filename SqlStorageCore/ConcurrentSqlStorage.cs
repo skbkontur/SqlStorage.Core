@@ -3,13 +3,10 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace SkbKontur.SqlStorageCore
 {
-    [UsedImplicitly]
     public class ConcurrentSqlStorage<TEntry, TKey> : IConcurrentSqlStorage<TEntry, TKey>
         where TEntry : class, ISqlEntity<TKey>
     {
@@ -60,6 +57,7 @@ namespace SkbKontur.SqlStorageCore
         {
             InTransaction(storage => storage.Delete<TEntry, TKey>(criterion), IsolationLevel.Serializable);
         }
+
         public TEntry[] Find(Expression<Func<TEntry, bool>> criterion, int limit)
         {
             return internalStorage.Find<TEntry, TKey>(criterion, limit);

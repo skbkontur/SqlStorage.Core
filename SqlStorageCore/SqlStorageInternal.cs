@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 
 using Npgsql;
@@ -171,10 +169,13 @@ namespace SkbKontur.SqlStorageCore
             return func(createDbContext());
         }
 
-        private static SqlStorageException? ToSqlStorageException(PostgresException postgresException)
-            => PostgresExceptionRecognizer.TryRecognizeException(postgresException, out var sqlStorageRecognizedException)
-                   ? sqlStorageRecognizedException
-                   : new UnknownSqlStorageException(postgresException);
+        private static SqlStorageException ToSqlStorageException(PostgresException postgresException)
+        {
+            return PostgresExceptionRecognizer.TryRecognizeException(postgresException, out var sqlStorageRecognizedException)
+                   && sqlStorageRecognizedException != null
+                       ? sqlStorageRecognizedException
+                       : new UnknownSqlStorageException(postgresException);
+        }
 
         private readonly Func<SqlDbContext> createDbContext;
         private readonly bool disposeContextOnOperationFinish;

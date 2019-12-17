@@ -3,8 +3,6 @@ using System.Reflection;
 
 using GroboContainer.Infection;
 
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore.Tests.TestUtils
 {
     [IgnoredImplementation]

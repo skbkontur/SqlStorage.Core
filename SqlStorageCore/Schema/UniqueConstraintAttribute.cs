@@ -1,8 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore.Schema
 {
     [SuppressMessage("ReSharper", "RedundantAttributeUsageProperty")]

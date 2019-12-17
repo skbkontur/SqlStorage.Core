@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -10,7 +8,6 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal;
 
 namespace SkbKontur.SqlStorageCore.Schema
 {
-    [UsedImplicitly]
     public class SqlMigrationsAnnotationProvider : NpgsqlMigrationsAnnotationProvider
     {
         public SqlMigrationsAnnotationProvider(MigrationsAnnotationProviderDependencies dependencies)

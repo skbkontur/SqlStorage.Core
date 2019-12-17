@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore.Schema
 {
     public static class SqlCommonQueriesBuilder

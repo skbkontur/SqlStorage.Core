@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 using Npgsql;
 
 namespace SkbKontur.SqlStorageCore.Exceptions

@@ -1,7 +1,5 @@
 using System.Reflection;
 
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore
 {
     public interface ISqlDbContextSettings

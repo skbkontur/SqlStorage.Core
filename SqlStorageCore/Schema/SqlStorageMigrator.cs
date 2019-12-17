@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -11,7 +9,6 @@ using Vostok.Logging.Abstractions;
 
 namespace SkbKontur.SqlStorageCore.Schema
 {
-    [UsedImplicitly]
     public class SqlStorageMigrator
     {
         public SqlStorageMigrator(Func<SqlDbContext> createDbContext, ILog logger)

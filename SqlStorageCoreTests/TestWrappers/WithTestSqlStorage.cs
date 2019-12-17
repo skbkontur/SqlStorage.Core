@@ -3,8 +3,6 @@ using System.Reflection;
 using GroboContainer.NUnitExtensions;
 using GroboContainer.NUnitExtensions.Impl.TestContext;
 
-using JetBrains.Annotations;
-
 using Microsoft.Extensions.Logging;
 
 using SkbKontur.SqlStorageCore.Schema;

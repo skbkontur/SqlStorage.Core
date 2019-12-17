@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -15,7 +13,6 @@ using SkbKontur.SqlStorageCore.EventLog;
 
 namespace SkbKontur.SqlStorageCore.Schema
 {
-    [UsedImplicitly]
     public class SqlMigrationsScriptGenerator : NpgsqlMigrationsSqlGenerator
     {
         public SqlMigrationsScriptGenerator(MigrationsSqlGeneratorDependencies dependencies)

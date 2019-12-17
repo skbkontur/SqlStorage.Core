@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -17,8 +15,6 @@ namespace SkbKontur.SqlStorageCore.Schema
 {
     public static class EntityTypeBuilderExtensions
     {
-        private static readonly ValueConverter<Timestamp, long> timestampConverter = new ValueConverter<Timestamp, long>(timestamp => timestamp.Ticks, l => new Timestamp(l));
-
         public static EntityTypeBuilder ApplyTimestampConverter(this EntityTypeBuilder entityTypeBuilder)
         {
             var timestampProperties = entityTypeBuilder
@@ -116,5 +112,7 @@ namespace SkbKontur.SqlStorageCore.Schema
 
             return entityTypeBuilder;
         }
+
+        private static readonly ValueConverter<Timestamp, long> timestampConverter = new ValueConverter<Timestamp, long>(timestamp => timestamp.Ticks, l => new Timestamp(l));
     }
 }

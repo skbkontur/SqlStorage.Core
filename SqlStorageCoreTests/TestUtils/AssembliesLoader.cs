@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore.Tests.TestUtils
 {
     public static class AssembliesLoader

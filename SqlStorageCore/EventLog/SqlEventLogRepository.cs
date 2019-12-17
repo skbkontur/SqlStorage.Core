@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
@@ -11,7 +9,8 @@ using Newtonsoft.Json;
 using SkbKontur.SqlStorageCore.Schema;
 
 namespace SkbKontur.SqlStorageCore.EventLog
-{ public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
+{
+    public class SqlEventLogRepository<TEntity, TKey> : ISqlEventLogRepository<TEntity, TKey>
         where TEntity : ISqlEntity<TKey>
     {
         public SqlEventLogRepository(IConcurrentSqlStorage<SqlEventLogEntry, Guid> eventLogSqlStorage, Func<SqlDbContext> createDbContext)
@@ -22,7 +21,6 @@ namespace SkbKontur.SqlStorageCore.EventLog
             entityTypeName = GetEventLogEntityTypeName(createDbContext, entityType);
         }
 
-        
         private static string GetEventLogEntityTypeName(Func<SqlDbContext> createDbContext, Type entityType)
         {
             using var context = createDbContext();

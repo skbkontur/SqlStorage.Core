@@ -4,9 +4,9 @@
   <PropertyGroup>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-	<Nullable>enable</Nullable>
-	<LangVersion>latest</LangVersion>
-	<WarningsAsErrors>CS8600;CS8602;CS8603;CS8604;CS8625;CS8619</WarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <WarningsAsErrors>CS8600;CS8602;CS8603;CS8604;CS8625;CS8619</WarningsAsErrors>
   </PropertyGroup>
 
   <!-- include pdbs into nuget package -->

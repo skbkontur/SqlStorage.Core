@@ -1,8 +1,6 @@
 using System;
 using System.Linq.Expressions;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace SkbKontur.SqlStorageCore.Schema

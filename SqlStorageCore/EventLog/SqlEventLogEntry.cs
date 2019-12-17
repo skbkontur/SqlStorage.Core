@@ -1,10 +1,7 @@
-using JetBrains.Annotations;
-
 using SkbKontur.Cassandra.TimeBasedUuid;
 
 namespace SkbKontur.SqlStorageCore.EventLog
 {
-    [UsedImplicitly(ImplicitUseTargetFlags.Members)]
     public class SqlEventLogEntry : SqlEntity
     {
         public string EntityType { get; set; }

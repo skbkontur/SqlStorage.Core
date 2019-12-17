@@ -3,8 +3,6 @@ using System;
 using GroboContainer.NUnitExtensions;
 using GroboContainer.NUnitExtensions.Impl.TestContext;
 
-using JetBrains.Annotations;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace SkbKontur.SqlStorageCore.Tests.TestWrappers

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-using JetBrains.Annotations;
-
 namespace SkbKontur.SqlStorageCore
 {
     public abstract class SqlEntitiesRegistry
