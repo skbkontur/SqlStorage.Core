@@ -317,16 +317,6 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
 
         private const int testObjectsCount = 100;
 
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly object[][] testParallelTransactionsOrderingSource = new[] {true, false}
-                                                                                    .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
-                                                                                    .ToArray();
-
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly object[][] testParallelTransactionsCountSource = new[] {true, false}
-                                                                                 .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
-                                                                                 .ToArray();
-
         private long? initialOffset;
 
         [Injected]
@@ -364,6 +354,14 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         private static readonly IsolationLevel[][] supportedTransactionIsolationLevelsCartesian = supportedIsolationLevels
                                                                                                   .SelectMany(first => supportedIsolationLevels.Select(second => new[] {first, second}))
                                                                                                   .ToArray();
+
+        private static readonly object[][] testParallelTransactionsOrderingSource = new[] {true, false}
+                                                                                    .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
+                                                                                    .ToArray();
+
+        private static readonly object[][] testParallelTransactionsCountSource = new[] {true, false}
+                                                                                 .SelectMany(withPrecedingEvents => supportedTransactionIsolationLevelsCartesian.Select(levels => new object[] {levels[0], levels[1], withPrecedingEvents}))
+                                                                                 .ToArray();
 
         // ReSharper restore StaticMemberInGenericType
     }
