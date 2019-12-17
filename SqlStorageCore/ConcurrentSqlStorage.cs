@@ -80,6 +80,7 @@ namespace SkbKontur.SqlStorageCore
                 {
                     using var ctx = createDbContext();
                     using var transaction = ctx.Database.BeginTransaction(isolationLevel);
+                    // ReSharper disable once AccessToDisposedClosure
                     var storage = new SqlStorageInternal(() => ctx, disposeContextOnOperationFinish : false);
                     operation(storage);
                     transaction.Commit();
