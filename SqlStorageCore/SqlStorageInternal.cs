@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 using SkbKontur.SqlStorageCore.Exceptions;
+using SkbKontur.SqlStorageCore.Linq;
 
 namespace SkbKontur.SqlStorageCore
 {
@@ -75,16 +77,15 @@ namespace SkbKontur.SqlStorageCore
                 WithDbContext(context =>
                     {
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
-                        //entities.Batch(1000) // todo написать без morelinq
-                        //        .ForEach(batch =>
-                        //            {
-                        //                var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
-                        //                if (whenMatched != null)
-                        //                {
-                        //                    upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
-                        //                }
-                        //                upsertCommandBuilder.Run();
-                        //            });
+                        entities.Batch(1000).ForEach(batch =>
+                                    {
+                                        var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
+                                        if (whenMatched != null)
+                                        {
+                                            upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                                        }
+                                        upsertCommandBuilder.Run();
+                                    });
                     });
             }
             catch (PostgresException exception)
