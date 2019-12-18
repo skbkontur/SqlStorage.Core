@@ -26,7 +26,7 @@ namespace SkbKontur.SqlStorageCore.Tests.TestWrappers
             var loggerFactory = new LoggerFactory(new[] {new VostokLoggerProvider(consoleLog.WithMinimumLevel(LogLevel.Warn))});
             container.Configurator.ForAbstraction<ILoggerFactory>().UseInstances(loggerFactory);
             container.Configurator.ForAbstraction<ISqlDbContextSettings>().UseInstances(new TestSqlDbContextSettings(DbName, TestSqlEntitiesRegistry, MigrationsAssembly));
-            container.Get<SqlStorageMigrator>().Migrate();
+            container.Get<SqlStorageMigrator>().MigrateAsync().GetAwaiter().GetResult();
         }
 
         public const string DbName = "Tests";

@@ -1,9 +1,16 @@
 using System;
+using System.Data.Common;
 using System.Linq;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+
+using Npgsql;
+
+using SkbKontur.SqlStorageCore.Exceptions;
 
 using Vostok.Logging.Abstractions;
 
@@ -17,20 +24,21 @@ namespace SkbKontur.SqlStorageCore.Schema
             this.logger = logger.ForContext("SqlStorage.Migrator");
         }
 
-        public void Migrate(string? migrationName = null)
+        public async Task MigrateAsync(string? migrationName = null)
         {
             using var context = createDbContext();
-            var lastAppliedMigration = GetLastAppliedMigrationName(context);
+            await WaitDatabaseAvailable(context);
+            var lastAppliedMigration = await GetLastAppliedMigrationName(context);
             try
             {
                 if (migrationName == null)
-                    context.Database.Migrate();
+                    await context.Database.MigrateAsync();
                 else
-                    context.GetService<IMigrator>().Migrate(migrationName);
+                    await context.GetService<IMigrator>().MigrateAsync(migrationName);
             }
             catch (Exception e)
             {
-                var justAppliedMigration = GetLastAppliedMigrationName(context);
+                var justAppliedMigration = await GetLastAppliedMigrationName(context);
                 logger.Fatal($"Database migration failed. Last applied migration: {justAppliedMigration}. Exception: {e}");
 
                 if (justAppliedMigration != lastAppliedMigration)
@@ -38,7 +46,7 @@ namespace SkbKontur.SqlStorageCore.Schema
                     logger.Info($"Some migrations were applied. Last just applied migration: {justAppliedMigration}. Starting rollback...");
                     try
                     {
-                        context.GetService<IMigrator>().Migrate(lastAppliedMigration);
+                        await context.GetService<IMigrator>().MigrateAsync(lastAppliedMigration);
                     }
                     catch (Exception rollbackException)
                     {
@@ -51,9 +59,33 @@ namespace SkbKontur.SqlStorageCore.Schema
             }
         }
 
-        private static string? GetLastAppliedMigrationName(SqlDbContext context)
+        private static async Task WaitDatabaseAvailable(DbContext context)
         {
-            var appliedMigrations = context.Database.GetAppliedMigrations().ToList();
+            var attempts = 0;
+            while (attempts < 6)
+            {
+                var canConnect = false;
+                try
+                {
+                    canConnect = await context.Database.CanConnectAsync();
+                }
+                catch (SocketException)
+                {
+                    // could not establish connection, should retry
+                }
+                if (canConnect)
+                    return;
+                attempts++;
+                await Task.Delay(TimeSpan.FromSeconds(attempts * 10));
+            }
+
+            var connectionString = new NpgsqlConnectionStringBuilder(context.Database.GetDbConnection().ConnectionString);
+            throw new DatabaseUnavailableException(connectionString.Database, connectionString.Host, connectionString.Port);
+        }
+
+        private static async Task<string?> GetLastAppliedMigrationName(DbContext context)
+        {
+            var appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
             return appliedMigrations.OrderBy(m => m).LastOrDefault();
         }
 
