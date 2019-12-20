@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 using FluentAssertions;
 
@@ -15,7 +16,7 @@ namespace SkbKontur.SqlStorageCore.Tests
     public class DeleteTests : SqlStorageTestBase<TestValueTypedPropertiesStorageElement, Guid>
     {
         [Test]
-        public void DeleteByCriterion()
+        public async Task DeleteByCriterion()
         {
             var entities = GenerateObjects(count : 10).ToArray();
             const int intConstraint = -42;
@@ -29,18 +30,20 @@ namespace SkbKontur.SqlStorageCore.Tests
                 entities[i].IntProperty = 7;
             }
 
-            sqlStorage.CreateOrUpdate(entities);
+            await sqlStorage.CreateOrUpdateAsync(entities);
             Expression<Func<TestValueTypedPropertiesStorageElement, bool>> expression = e => e.IntProperty == intConstraint && !(e.BoolProperty ?? true);
-            sqlStorage.Delete(expression);
-            var actual = sqlStorage.ReadAll();
+            await sqlStorage.DeleteAsync(expression);
+            var actual = await sqlStorage.ReadAllAsync();
             var shouldDeleted = entities.Where(expression.Compile()).Select(x => x.Id).ToArray();
             AssertUnorderedArraysEquality(actual, entities.Where(e => !shouldDeleted.Contains(e.Id)));
         }
 
         [Test]
-        public void DeleteNonExisting()
+        public async Task DeleteNonExisting()
         {
-            Action nonexistentDeletion = () => sqlStorage.Delete(Guid.NewGuid());
+            Action nonexistentDeletion =   () => sqlStorage.DeleteAsync(Guid.NewGuid());
+            Func<Task> func = () => sqlStorage.DeleteAsync(Guid.NewGuid());
+            await func.Should().NotThrowAsync();
             nonexistentDeletion.Should().NotThrow();
         }
     }

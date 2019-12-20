@@ -29,21 +29,18 @@ namespace SkbKontur.SqlStorageCore.Tests
             var updateWaitHandle = new AutoResetEvent(false);
             var deleteWaitHandle = new AutoResetEvent(false);
             var expected = GenerateObjects().First();
-            var update = Task.Run(() =>
+            var update = Task.Run(async () => await sqlStorage.BatchAsync(async storage =>
                 {
-                    sqlStorage.Batch(storage =>
-                        {
-                            storage.CreateOrUpdate<TestBatchStorageElement, Guid>(expected);
-                            updateWaitHandle.Set();
-                            deleteWaitHandle.WaitOne();
-                            var actual = storage.TryRead<TestBatchStorageElement, Guid>(expected.Id);
-                            actual.Should().BeEquivalentTo(expected);
-                        }, isolationLevel);
-                });
+                    await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(expected);
+                    updateWaitHandle.Set();
+                    deleteWaitHandle.WaitOne();
+                    var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(expected.Id);
+                    actual.Should().BeEquivalentTo(expected);
+                }, isolationLevel));
             var delete = Task.Run(() =>
                 {
                     updateWaitHandle.WaitOne();
-                    sqlStorage.Delete(expected.Id);
+                    sqlStorage.DeleteAsync(expected.Id);
                     deleteWaitHandle.Set();
                 });
             Task.WaitAll(new[] {update, delete}, TimeSpan.FromSeconds(5));
@@ -59,11 +56,11 @@ namespace SkbKontur.SqlStorageCore.Tests
             var updateTasks = expected.Select(e => Task.Run(() =>
                 {
                     createWaitHandle.WaitOne();
-                    sqlStorage.CreateOrUpdate(e);
+                    sqlStorage.CreateOrUpdateAsync(e);
                 }));
             var create = Task.Run(() =>
                 {
-                    sqlStorage.Batch(storage =>
+                    sqlStorage.BatchAsync(storage =>
                         {
                             storage.CreateOrUpdate<TestBatchStorageElement, Guid>(entity);
                             createWaitHandle.Set();
