@@ -22,7 +22,7 @@ namespace SkbKontur.SqlStorageCore.Tests
 
         private static void InternalTestWriteAndReadThroughMultipleThreads(IReadOnlyCollection<TestValueTypedPropertiesStorageElement> objects, IConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
         {
-            Parallel.ForEach(objects.Batch(objects.Count / 10), batch => batch.ForEach(e => storage.CreateOrUpdate(e)));
+            Parallel.ForEach(objects.Batch(objects.Count / 10), batch => batch.ForEach(e => storage.CreateOrUpdateAsync(e).GetAwaiter().GetResult()));
 
             var objectsCaptured = objects;
             objects.Batch(objects.Count / 10)
@@ -32,7 +32,7 @@ namespace SkbKontur.SqlStorageCore.Tests
                            var batchList = batch as IList<TestValueTypedPropertiesStorageElement> ?? batch.ToList();
                            batchList.ForEach(x =>
                                {
-                                   var findResult = storage.Find(y => y.IntProperty == x.IntProperty, int.MaxValue);
+                                   var findResult = storage.FindAsync(y => y.IntProperty == x.IntProperty, int.MaxValue).GetAwaiter().GetResult();
                                    AssertUnorderedArraysEquality(findResult, objectsCaptured.Where(y => y.IntProperty == x.IntProperty));
                                });
                        });

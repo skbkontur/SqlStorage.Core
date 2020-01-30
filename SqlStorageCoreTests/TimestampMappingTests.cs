@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 using FluentAssertions;
 
@@ -14,11 +15,11 @@ namespace SkbKontur.SqlStorageCore.Tests
     public class TimestampMappingTests : SqlStorageTestBase<TestTimestampElement, Guid>
     {
         [Test]
-        public void TestReadWrite()
+        public async Task TestReadWrite()
         {
             var entity = new TestTimestampElement {Id = Guid.NewGuid(), Timestamp = new Timestamp(new DateTime(2018, 07, 01, 0, 0, 0, DateTimeKind.Utc))};
-            sqlStorage.CreateOrUpdate(entity);
-            var actual = sqlStorage.TryRead(entity.Id);
+            await sqlStorage.CreateOrUpdateAsync(entity);
+            var actual = await sqlStorage.TryReadAsync(entity.Id);
             actual.Should().BeEquivalentTo(entity);
         }
     }

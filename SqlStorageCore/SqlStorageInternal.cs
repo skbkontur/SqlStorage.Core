@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -26,7 +25,7 @@ namespace SkbKontur.SqlStorageCore
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return await WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken));
+            return await WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask());
         }
 
         public async Task<TEntry[]> TryReadAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
@@ -85,15 +84,15 @@ namespace SkbKontur.SqlStorageCore
                 await WithDbContext(async context =>
                     {
                         // Sql statement cannot have more than 65535 parameters, so we need to perform updates with limited entities count
-                        entities.Batch(1000).ForEach(batch =>
+                        foreach (var batch in entities.Batch(1000))
+                        {
+                            var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
+                            if (whenMatched != null)
                             {
-                                var upsertCommandBuilder = context.UpsertRange(batch).On(onExpression ?? (e => e.Id));
-                                if (whenMatched != null)
-                                {
-                                    upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
-                                }
-                                upsertCommandBuilder.Run();
-                            });
+                                upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
+                            }
+                            await upsertCommandBuilder.RunAsync(cancellationToken);
+                        }
                     });
             }
             catch (PostgresException exception)
@@ -164,25 +163,25 @@ namespace SkbKontur.SqlStorageCore
             return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArrayAsync(cancellationToken));
         }
 
-        private void WithDbContext(Action<SqlDbContext> action)
+        private async Task WithDbContext(Func<SqlDbContext, Task> action)
         {
             if (disposeContextOnOperationFinish)
             {
-                using var context = createDbContext();
-                action(context);
+                await using var context = createDbContext();
+                await action(context);
             }
             else
-                action(createDbContext());
+                await action(createDbContext());
         }
 
-        private TResult WithDbContext<TResult>(Func<SqlDbContext, TResult> func)
+        private async Task<TResult> WithDbContext<TResult>(Func<SqlDbContext, Task<TResult>> func)
         {
             if (disposeContextOnOperationFinish)
             {
-                using var context = createDbContext();
-                return func(context);
+                await using var context = createDbContext();
+                return await func(context);
             }
-            return func(createDbContext());
+            return await func(createDbContext());
         }
 
         private static SqlStorageException ToSqlStorageException(PostgresException postgresException)

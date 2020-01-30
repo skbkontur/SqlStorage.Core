@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 using FluentAssertions;
 
@@ -15,91 +16,90 @@ namespace SkbKontur.SqlStorageCore.Tests
     public class TestUpsert : SqlStorageTestBase<TestUpsertSqlEntry, Guid>
     {
         [Test]
-        public void TestUpsertOnPrimaryKey()
+        public async Task TestUpsertOnPrimaryKey()
         {
             var entity1 = GenerateObjects().First();
             var entity2 = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(new[] {entity1, entity2});
+            await sqlStorage.CreateOrUpdateAsync(new[] {entity1, entity2});
             entity1.StringValue = Guid.NewGuid().ToString();
-            sqlStorage.CreateOrUpdate(entity1);
-            var actual = sqlStorage.ReadAll();
+            await sqlStorage.CreateOrUpdateAsync(entity1);
+            var actual = await sqlStorage.ReadAllAsync();
             actual.Length.Should().Be(2);
             AssertUnorderedArraysEquality(actual, new[] {entity1, entity2});
         }
 
         [Test]
-        public void TestUpsertOnCustomExpressionMatchExists()
+        public async Task TestUpsertOnCustomExpressionMatchExists()
         {
             var entity1 = GenerateObjects().First();
             var entity2 = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(new[] {entity1, entity2});
+            await sqlStorage.CreateOrUpdateAsync(new[] {entity1, entity2});
             entity1.StringValue = Guid.NewGuid().ToString();
-            sqlStorage.CreateOrUpdate(entity1, e => new {e.SomeId1, e.SomeId2});
-            var actual = sqlStorage.ReadAll();
+            await sqlStorage.CreateOrUpdateAsync(entity1, e => new {e.SomeId1, e.SomeId2});
+            var actual = await sqlStorage.ReadAllAsync();
             actual.Length.Should().Be(2);
             AssertUnorderedArraysEquality(actual, new[] {entity1, entity2});
         }
 
         [Test]
-        public void CreateEntity_WithDuplicateUniqueConstraint_Throws()
+        public async Task CreateEntity_WithDuplicateUniqueConstraint_Throws()
         {
             var entity1 = GenerateObjects().First();
             var entity2 = GenerateObjects().First();
             (entity2.SomeId1, entity2.SomeId2) = (entity1.SomeId1, entity1.SomeId2);
 
-            Action creation = () => sqlStorage.CreateOrUpdate(new[] {entity1, entity2});
-
-            creation.Should().Throw<UniqueViolationException>();
+            Func<Task> creation = async () => await sqlStorage.CreateOrUpdateAsync(new[] {entity1, entity2});
+            await creation.Should().ThrowAsync<UniqueViolationException>();
         }
 
         [Test]
-        public void UpdateEntity_WithDuplicateUniqueConstraint_Throws()
+        public async Task UpdateEntity_WithDuplicateUniqueConstraint_Throws()
         {
             var entity1 = GenerateObjects().First();
             var entity2 = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(new[] {entity1, entity2});
+            await sqlStorage.CreateOrUpdateAsync(new[] {entity1, entity2});
 
             (entity2.SomeId1, entity2.SomeId2) = (entity1.SomeId1, entity1.SomeId2);
-            Action updating = () => sqlStorage.CreateOrUpdate(entity2);
+            Func<Task> updating = async () => await sqlStorage.CreateOrUpdateAsync(entity2);
 
-            updating.Should().Throw<UniqueViolationException>();
+            await updating.Should().ThrowAsync<UniqueViolationException>();
         }
 
         [Test]
-        public void CreateEntity_WithoutRequiredValue_Throws()
+        public async Task CreateEntity_WithoutRequiredValue_Throws()
         {
             var entity = GenerateObjects().First();
             entity.RequiredValue = null;
 
-            Action creating = () => sqlStorage.CreateOrUpdate(entity);
-            creating.Should().Throw<NotNullViolationException>()
+            Func<Task> creating = async () => await sqlStorage.CreateOrUpdateAsync(entity);
+            (await creating.Should().ThrowAsync<NotNullViolationException>())
                     .Which.ColumnName
                     .Should().Be(nameof(entity.RequiredValue));
         }
 
         [Test]
-        public void UpdateEntity_WithoutRequiredValue_Throws()
+        public async Task UpdateEntity_WithoutRequiredValue_Throws()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(entity);
+            await sqlStorage.CreateOrUpdateAsync(entity);
 
             entity.RequiredValue = null;
-            Action updating = () => sqlStorage.CreateOrUpdate(entity);
-            updating.Should().Throw<NotNullViolationException>()
+            Func<Task> updating = async () => await sqlStorage.CreateOrUpdateAsync(entity);
+            (await updating.Should().ThrowAsync<NotNullViolationException>())
                     .Which.ColumnName
                     .Should().Be(nameof(entity.RequiredValue));
         }
 
         [Test]
-        public void TestUpsertOnCustomExpressionPrimaryKeyNotUpdated()
+        public async Task TestUpsertOnCustomExpressionPrimaryKeyNotUpdated()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(entity);
+            await sqlStorage.CreateOrUpdateAsync(entity);
             var oldId = entity.Id;
             entity.Id = Guid.NewGuid();
             entity.StringValue = Guid.NewGuid().ToString();
-            sqlStorage.CreateOrUpdate(entity, e => new {e.SomeId1, e.SomeId2}, (db, ins) => new TestUpsertSqlEntry {Id = db.Id, SomeId1 = db.SomeId1, SomeId2 = db.SomeId2, StringValue = ins.StringValue});
-            var actual = sqlStorage.ReadAll();
+            await sqlStorage.CreateOrUpdateAsync(entity, e => new {e.SomeId1, e.SomeId2}, (db, ins) => new TestUpsertSqlEntry {Id = db.Id, SomeId1 = db.SomeId1, SomeId2 = db.SomeId2, StringValue = ins.StringValue});
+            var actual = await sqlStorage.ReadAllAsync();
             actual.Length.Should().Be(1);
             var actualEntity = actual.First();
             actualEntity.Id.Should().Be(oldId);
@@ -107,16 +107,16 @@ namespace SkbKontur.SqlStorageCore.Tests
         }
 
         [Test]
-        public void TestUpsertOnCustomExpressionMatchNotExists()
+        public async Task TestUpsertOnCustomExpressionMatchNotExists()
         {
             var entity1 = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(entity1);
+            await sqlStorage.CreateOrUpdateAsync(entity1);
             var entity2 = GenerateObjects().First();
             entity2.SomeId1 = entity1.SomeId1;
 
-            sqlStorage.CreateOrUpdate(entity2, e => new {e.SomeId1, e.SomeId2});
+            await sqlStorage.CreateOrUpdateAsync(entity2, e => new {e.SomeId1, e.SomeId2});
 
-            var actual = sqlStorage.ReadAll();
+            var actual = await sqlStorage.ReadAllAsync();
             actual.Length.Should().Be(2);
             AssertUnorderedArraysEquality(actual, new[] {entity1, entity2});
         }

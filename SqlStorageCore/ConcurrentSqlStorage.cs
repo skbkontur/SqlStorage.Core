@@ -71,24 +71,22 @@ namespace SkbKontur.SqlStorageCore
             return await internalStorage.FindAsync<TEntry, TKey, TOrderProp>(criterion, orderBy, limit, cancellationToken);
         }
 
-        public async Task BatchAsync(Action<ISqlStorage> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+        public async Task BatchAsync(Func<ISqlStorage, Task> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
         {
             await InTransactionAsync(batchAction, isolationLevel, cancellationToken);
         }
 
-        private async Task InTransactionAsync(Action<ISqlStorage> operation, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+        private async Task InTransactionAsync(Func<ISqlStorage, Task> operation, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
         {
-            using (var context = createDbContext())
-                await context.Database.CreateExecutionStrategy().ExecuteAsync( async cts =>   
-                    {
-                        using (var ctx = createDbContext())
-                        using (var transaction =  await ctx.Database.BeginTransactionAsync(isolationLevel, cts))
-                        {
-                            var storage = new SqlStorageInternal(() => ctx, disposeContextOnOperationFinish : false);
-                            operation(storage);
-                            transaction.Commit();
-                        }
-                    }, cancellationToken);
+            await using var context = createDbContext();
+            await context.Database.CreateExecutionStrategy().ExecuteAsync(async cts =>
+                {
+                    await using var ctx = createDbContext();
+                    await using var transaction = await ctx.Database.BeginTransactionAsync(isolationLevel, cts);
+                    var storage = new SqlStorageInternal(() => ctx, disposeContextOnOperationFinish : false);
+                    await operation(storage);
+                    transaction.Commit();
+                }, cancellationToken);
         }
 
         private readonly Func<SqlDbContext> createDbContext;

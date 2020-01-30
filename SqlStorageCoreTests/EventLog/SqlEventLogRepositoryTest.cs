@@ -38,11 +38,11 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         }
 
         [Test]
-        public void TestCreateSingleObject()
+        public async Task TestCreateSingleObject()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(entity);
-            var events = eventLogRepository.GetEvents(initialOffset, 2);
+            await sqlStorage.CreateOrUpdateAsync(entity);
+            var events = await eventLogRepository.GetEventsAsync(initialOffset, 2);
             events.Length.Should().Be(1);
             var entityEvent = events.First();
             entityEvent.EntitySnapshot.Should().BeEquivalentTo(entity, equivalenceOptionsConfig);
@@ -50,21 +50,21 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         }
 
         [Test]
-        public void TestReadWithNoStartOffset()
+        public async Task TestReadWithNoStartOffset()
         {
             var entities = GenerateObjects(2).ToArray();
-            sqlStorage.CreateOrUpdate(entities);
-            var events = eventLogRepository.GetEvents(fromOffsetExclusive : null, int.MaxValue);
+            await sqlStorage.CreateOrUpdateAsync(entities);
+            var events = await eventLogRepository.GetEventsAsync(fromOffsetExclusive : null, int.MaxValue);
             events.Length.Should().Be(2);
             AssertUnorderedArraysEquality(events.Select(e => e.EntitySnapshot).ToArray(), entities);
         }
 
         [Test]
-        public void TestCreateMultipleObjects()
+        public async Task TestCreateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.CreateOrUpdate(entities);
-            var events = eventLogRepository.GetEvents(initialOffset, entities.Length + 1);
+            await sqlStorage.CreateOrUpdateAsync(entities);
+            var events = await eventLogRepository.GetEventsAsync(initialOffset, entities.Length + 1);
             events.Length.Should().Be(entities.Length);
             events.All(e => e.EventType == SqlEventType.Create).Should().BeTrue();
             var actualEntities = events.Select(e => e.EntitySnapshot).ToArray();
@@ -72,25 +72,25 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         }
 
         [Test]
-        public void TestUpdateSingleObject()
+        public async Task TestUpdateSingleObject()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(entity);
+            await sqlStorage.CreateOrUpdateAsync(entity);
             var offset = GetLastOffset();
             var updatedEntity = GenerateObjects().First();
             updatedEntity.Id = entity.Id;
-            sqlStorage.CreateOrUpdate(updatedEntity);
+            await sqlStorage.CreateOrUpdateAsync(updatedEntity);
 
-            var events = eventLogRepository.GetEvents(offset, 2);
+            var events = await eventLogRepository.GetEventsAsync(offset, 2);
             events.Length.Should().Be(1);
             events.Select(e => e.EntitySnapshot).Should().AllBeEquivalentTo(updatedEntity, equivalenceOptionsConfig);
         }
 
         [Test]
-        public void TestUpdateMultipleObjects()
+        public async Task TestUpdateMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.CreateOrUpdate(entities);
+            await sqlStorage.CreateOrUpdateAsync(entities);
             var offset = GetLastOffset();
             var updatedEntities = GenerateObjects(testObjectsCount).Select((e, i) =>
                 {
@@ -98,9 +98,9 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
                     return e;
                 }).ToArray();
 
-            sqlStorage.CreateOrUpdate(updatedEntities);
+            await sqlStorage.CreateOrUpdateAsync(updatedEntities);
 
-            var events = eventLogRepository.GetEvents(offset, entities.Length * 2 + 1);
+            var events = await eventLogRepository.GetEventsAsync(offset, entities.Length * 2 + 1);
             events.Length.Should().Be(entities.Length);
             events.All(e => e.EventType == SqlEventType.Update || e.EventType == SqlEventType.Create).Should().BeTrue();
             var snapshots = events.Select(e => e.EntitySnapshot).DistinctBy(e => e.Id).ToArray();
@@ -109,14 +109,14 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         }
 
         [Test]
-        public void TestDeleteSingleObject()
+        public async Task TestDeleteSingleObject()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(entity);
+            await sqlStorage.CreateOrUpdateAsync(entity);
             var offset = GetLastOffset();
-            sqlStorage.Delete(entity.Id);
+            await sqlStorage.DeleteAsync(entity.Id);
 
-            var events = eventLogRepository.GetEvents(offset, 2);
+            var events = await eventLogRepository.GetEventsAsync(offset, 2);
 
             events.Length.Should().Be(1);
             var entityEvent = events.First();
@@ -125,25 +125,25 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         }
 
         [Test]
-        public void TestDeleteMultipleObjects()
+        public async Task TestDeleteMultipleObjects()
         {
             var entities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.CreateOrUpdate(entities);
+            await sqlStorage.CreateOrUpdateAsync(entities);
             var offset = GetLastOffset();
-            sqlStorage.Delete(entities.Select(e => e.Id).ToArray());
+            await sqlStorage.DeleteAsync(entities.Select(e => e.Id).ToArray());
 
-            var events = eventLogRepository.GetEvents(offset, entities.Length + 1);
+            var events = await eventLogRepository.GetEventsAsync(offset, entities.Length + 1);
             events.Length.Should().Be(entities.Length);
             events.All(e => e.EventType == SqlEventType.Delete).Should().BeTrue();
             AssertUnorderedArraysEquality(events.Select(e => e.EntitySnapshot), entities);
         }
 
         [Test]
-        public void TestCreateAndUpdateAndDeleteMultipleObjectsThroughMultipleThreads()
+        public async Task TestCreateAndUpdateAndDeleteMultipleObjectsThroughMultipleThreads()
         {
             var random = new Random(DateTime.Now.Millisecond);
             var initialEntities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.CreateOrUpdate(initialEntities);
+            await sqlStorage.CreateOrUpdateAsync(initialEntities);
             var entitiesState = new ConcurrentDictionary<TKey, SqlEventType>();
             var offset = GetLastOffset();
             var eventsCount = 0;
@@ -157,18 +157,18 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
                         case 0:
                             var updated = GenerateObjects().First();
                             updated.Id = entity.Id;
-                            sqlStorage.CreateOrUpdate(updated);
+                            sqlStorage.CreateOrUpdateAsync(updated).GetAwaiter().GetResult();
                             eventsCount += 2;
                             entitiesState.TryAdd(entity.Id, SqlEventType.Update);
                             continue;
                         case 1:
-                            sqlStorage.Delete(entity.Id);
+                            sqlStorage.DeleteAsync(entity.Id).GetAwaiter().GetResult();
                             eventsCount++;
                             entitiesState.TryAdd(entity.Id, SqlEventType.Delete);
                             continue;
                         case 2:
                             var newEntity = GenerateObjects().First();
-                            sqlStorage.CreateOrUpdate(newEntity);
+                            sqlStorage.CreateOrUpdateAsync(newEntity).GetAwaiter().GetResult();
                             eventsCount++;
                             entitiesState.TryAdd(newEntity.Id, SqlEventType.Create);
                             continue;
@@ -178,7 +178,7 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
                     }
                 });
 
-            var events = eventLogRepository.GetEvents(offset, testObjectsCount + eventsCount);
+            var events = await eventLogRepository.GetEventsAsync(offset, testObjectsCount + eventsCount);
             var lastEvents = events.GroupBy(e => e.EntitySnapshot.Id).SelectMany(g => g.MaxBy(@event => @event.EventOffset)).ToArray();
             lastEvents.Select(e => e.EntitySnapshot.Id).Should().BeEquivalentTo(entitiesState.Select(e => e.Key));
             foreach (var entityEvent in lastEvents)
@@ -188,26 +188,26 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         }
 
         [Test]
-        public void TestLimit()
+        public async Task TestLimit()
         {
             var expectedEntities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.CreateOrUpdate(expectedEntities);
+            await sqlStorage.CreateOrUpdateAsync(expectedEntities);
             var notExpectedEntities = GenerateObjects(testObjectsCount).ToArray();
-            sqlStorage.CreateOrUpdate(notExpectedEntities);
-            var events = eventLogRepository.GetEvents(initialOffset, expectedEntities.Length);
+            await sqlStorage.CreateOrUpdateAsync(notExpectedEntities);
+            var events = await eventLogRepository.GetEventsAsync(initialOffset, expectedEntities.Length);
             events.Length.Should().Be(expectedEntities.Length);
             var actualSnapshots = events.Select(e => e.EntitySnapshot).ToArray();
             AssertUnorderedArraysEquality(actualSnapshots, expectedEntities);
         }
 
         [Test]
-        public void TestOffsetOrdering()
+        public async Task TestOffsetOrdering()
         {
             var entity = GenerateObjects().First();
-            sqlStorage.CreateOrUpdate(entity);
-            sqlStorage.CreateOrUpdate(entity);
-            sqlStorage.Delete(entity.Id);
-            var events = eventLogRepository.GetEvents(initialOffset, 3);
+            await sqlStorage.CreateOrUpdateAsync(entity);
+            await sqlStorage.CreateOrUpdateAsync(entity);
+            await sqlStorage.DeleteAsync(entity.Id);
+            var events = await eventLogRepository.GetEventsAsync(initialOffset, 3);
             events.Should().BeInAscendingOrder(e => e.EventOffset);
             events.Select(e => e.EventType)
                   .Should()
@@ -222,49 +222,49 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         }
 
         [Test]
-        public void TestGetEventsCount()
+        public async Task TestGetEventsCount()
         {
             const int entitiesCount = 5;
             var entities = GenerateObjects(entitiesCount).ToArray();
-            eventLogRepository.GetEventsCount(fromOffsetExclusive : null).Should().Be(0);
+            (await eventLogRepository.GetEventsCountAsync(fromOffsetExclusive : null)).Should().Be(0);
 
-            sqlStorage.CreateOrUpdate(entities);
-            var events = eventLogRepository.GetEvents(null, entitiesCount);
+            await sqlStorage.CreateOrUpdateAsync(entities);
+            var events = await eventLogRepository.GetEventsAsync(null, entitiesCount);
 
-            eventLogRepository.GetEventsCount(fromOffsetExclusive : null).Should().Be(entitiesCount);
-            eventLogRepository.GetEventsCount(fromOffsetExclusive : events[1].EventOffset).Should().Be(3);
+            (await eventLogRepository.GetEventsCountAsync(fromOffsetExclusive : null)).Should().Be(entitiesCount);
+            (await eventLogRepository.GetEventsCountAsync(fromOffsetExclusive : events[1].EventOffset)).Should().Be(3);
             var lastEventOffset = events.Last().EventOffset;
             var farFutureOffset = lastEventOffset + 1000;
-            eventLogRepository.GetEventsCount(fromOffsetExclusive : farFutureOffset).Should().Be(0);
+            (await eventLogRepository.GetEventsCountAsync(fromOffsetExclusive : farFutureOffset)).Should().Be(0);
         }
 
         [TestCaseSource(nameof(testParallelTransactionsOrderingSource))]
         public async Task TestOffsetOrderingParallelTransactions(IsolationLevel firstTransactionIsolationLevel, IsolationLevel secondTransactionIsolationLevel, bool withPrecedingEvents)
         {
-            if (withPrecedingEvents) GeneratePrecedingEvents();
+            if (withPrecedingEvents) await GeneratePrecedingEvents();
 
             var fromOffsetExclusive = GetLastOffset();
             var entities = GenerateObjects(2).ToArray();
             var firstTransactionReady = new AutoResetEvent(false);
             var secondTransactionFinish = new AutoResetEvent(false);
 
-            var firstTransaction = Task.Run(() => sqlStorage.Batch(storage =>
+            var firstTransaction = sqlStorage.BatchAsync(async storage =>
                 {
-                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
                     firstTransactionReady.Set();
                     secondTransactionFinish.WaitOne();
-                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
-                }, firstTransactionIsolationLevel)).ConfigureAwait(false);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
+                }, firstTransactionIsolationLevel).ConfigureAwait(false);
 
             firstTransactionReady.WaitOne();
-            sqlStorage.Batch(storage => storage.CreateOrUpdate<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
-            var secondTransactionEvents = eventLogRepository.GetEvents(fromOffsetExclusive, 1);
+            await sqlStorage.BatchAsync(async storage => await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
+            var secondTransactionEvents = await eventLogRepository.GetEventsAsync(fromOffsetExclusive, 1);
             secondTransactionEvents.Should().BeEmpty();
 
             secondTransactionFinish.Set();
             await firstTransaction;
 
-            var events = eventLogRepository.GetEvents(fromOffsetExclusive, 4);
+            var events = await eventLogRepository.GetEventsAsync(fromOffsetExclusive, 4);
             events.Length.Should().Be(3);
             events.Should().BeInAscendingOrder(e => e.EventOffset);
         }
@@ -272,41 +272,41 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
         [TestCaseSource(nameof(testParallelTransactionsCountSource))]
         public async Task TestGetEventsCountParallelTransactions(IsolationLevel firstTransactionIsolationLevel, IsolationLevel secondTransactionIsolationLevel, bool withPrecedingEvents)
         {
-            if (withPrecedingEvents) GeneratePrecedingEvents();
+            if (withPrecedingEvents) await GeneratePrecedingEvents();
 
             var fromOffsetExclusive = GetLastOffset();
             var entities = GenerateObjects(2).ToArray();
             var firstTransactionReady = new AutoResetEvent(false);
             var secondTransactionFinish = new AutoResetEvent(false);
 
-            var firstTransaction = Task.Run(() => sqlStorage.Batch(storage =>
+            var firstTransaction = sqlStorage.BatchAsync(async storage =>
                 {
-                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
                     firstTransactionReady.Set();
                     secondTransactionFinish.WaitOne();
-                    storage.CreateOrUpdate<TEntity, TKey>(entities[0]);
-                }, firstTransactionIsolationLevel)).ConfigureAwait(false);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
+                }, firstTransactionIsolationLevel).ConfigureAwait(false);
 
             firstTransactionReady.WaitOne();
-            sqlStorage.Batch(storage => storage.CreateOrUpdate<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
-            eventLogRepository.GetEventsCount(fromOffsetExclusive).Should().Be(0);
+            await sqlStorage.BatchAsync(async storage => await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
+            (await eventLogRepository.GetEventsCountAsync(fromOffsetExclusive)).Should().Be(0);
 
             secondTransactionFinish.Set();
             await firstTransaction;
 
-            eventLogRepository.GetEventsCount(fromOffsetExclusive).Should().Be(3);
+            (await eventLogRepository.GetEventsCountAsync(fromOffsetExclusive)).Should().Be(3);
         }
 
-        private void GeneratePrecedingEvents()
+        private async Task GeneratePrecedingEvents()
         {
             var preceding = GenerateObjects(100).ToArray();
-            sqlStorage.CreateOrUpdate(preceding);
+            await sqlStorage.CreateOrUpdateAsync(preceding);
         }
 
         private long? GetLastOffset()
         {
             using var context = dbContextCreator.Create();
-            var entityTypeName = context.Model.FindEntityType(typeof(TEntity))?.Relational()?.TableName;
+            var entityTypeName = context.Model.FindEntityType(typeof(TEntity))?.GetTableName();
             Expression<Func<SqlEventLogEntry, bool>> filter = e => e.EntityType == entityTypeName
                                                                    && e.TransactionId < PostgresFunctions.SnapshotMinimalTransactionId(PostgresFunctions.CurrentTransactionIdsSnapshot());
             if (!context.Set<SqlEventLogEntry>().Any(filter))

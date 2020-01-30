@@ -37,34 +37,34 @@ namespace SkbKontur.SqlStorageCore.Tests
                     var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(expected.Id);
                     actual.Should().BeEquivalentTo(expected);
                 }, isolationLevel));
-            var delete = Task.Run(() =>
+            var delete = Task.Run(async () =>
                 {
                     updateWaitHandle.WaitOne();
-                    sqlStorage.DeleteAsync(expected.Id);
+                    await sqlStorage.DeleteAsync(expected.Id);
                     deleteWaitHandle.Set();
                 });
             Task.WaitAll(new[] {update, delete}, TimeSpan.FromSeconds(5));
         }
 
         [Test]
-        public void TestCreateAndMultipleUpdate()
+        public async Task TestCreateAndMultipleUpdate()
         {
             var createWaitHandle = new ManualResetEvent(false);
             var entity = GenerateObjects().First();
             var expected = GenerateObjects(20).ToArray();
             expected.ForEach(e => e.Id = entity.Id);
-            var updateTasks = expected.Select(e => Task.Run(() =>
+            var updateTasks = expected.Select(e => Task.Run(async () =>
                 {
                     createWaitHandle.WaitOne();
-                    sqlStorage.CreateOrUpdateAsync(e);
+                    await sqlStorage.CreateOrUpdateAsync(e);
                 }));
             var create = Task.Run(() =>
                 {
-                    sqlStorage.BatchAsync(storage =>
+                    sqlStorage.BatchAsync(async storage =>
                         {
-                            storage.CreateOrUpdate<TestBatchStorageElement, Guid>(entity);
+                            await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(entity);
                             createWaitHandle.Set();
-                            var actual = storage.TryRead<TestBatchStorageElement, Guid>(entity.Id);
+                            var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(entity.Id);
                             actual.Should().BeEquivalentTo(entity);
                         }, isolationLevel);
                 });
@@ -73,7 +73,7 @@ namespace SkbKontur.SqlStorageCore.Tests
             Task.WaitAll(runningTasks, TimeSpan.FromSeconds(60));
             runningTasks.All(t => t.IsCompleted).Should().BeTrue();
 
-            var actualUpdated = sqlStorage.TryRead(entity.Id);
+            var actualUpdated = await sqlStorage.TryReadAsync(entity.Id);
             actualUpdated?.Value.Should().NotBe(entity.Value);
             actualUpdated?.Value.Should().BeOneOf(expected.Select(e => e.Value));
         }
