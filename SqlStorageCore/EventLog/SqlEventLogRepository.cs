@@ -32,7 +32,7 @@ namespace SkbKontur.SqlStorageCore.EventLog
         private static string GetEventLogEntityTypeName(Func<SqlDbContext> createDbContext, Type entityType)
         {
             using var context = createDbContext();
-            var name = context.Model.FindEntityType(entityType)?.Relational()?.TableName;
+            var name = context.Model.FindEntityType(entityType)?.GetTableName();
             return name ?? throw new InvalidOperationException($"EventLog entity type name not found for {entityType.Name}");
         }
 
