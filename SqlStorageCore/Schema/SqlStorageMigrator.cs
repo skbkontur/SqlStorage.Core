@@ -27,7 +27,7 @@ namespace SkbKontur.SqlStorageCore.Schema
         public async Task MigrateAsync(string? migrationName = null)
         {
             using var context = createDbContext();
-            await WaitDatabaseAvailable(context);
+            //await WaitDatabaseAvailable(context); //todo check connection to server
             var lastAppliedMigration = await GetLastAppliedMigrationName(context);
             try
             {

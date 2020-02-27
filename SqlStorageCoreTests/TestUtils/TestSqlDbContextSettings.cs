@@ -33,6 +33,6 @@ namespace SkbKontur.SqlStorageCore.Tests.TestUtils
 
         public Assembly? MigrationsAssembly { get; }
 
-        public JsonConverter[]? CustomJsonConverters => null;
+        public JsonConverter[]? CustomJsonConverters { get; set; }
     }
 }
