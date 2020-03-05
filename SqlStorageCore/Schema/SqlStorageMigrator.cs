@@ -59,27 +59,31 @@ namespace SkbKontur.SqlStorageCore.Schema
             }
         }
 
-        private static async Task WaitDatabaseAvailable(DbContext context)
+        private async Task WaitDatabaseAvailable(DbContext context)
         {
             var attempts = 0;
+            var dbConnection = context.Database.GetDbConnection();
             while (attempts < 6)
             {
-                var canConnect = false;
                 try
                 {
-                    canConnect = await context.Database.CanConnectAsync();
-                }
-                catch (SocketException)
-                {
-                    // could not establish connection, should retry
-                }
-                if (canConnect)
+                    await dbConnection.OpenAsync().ConfigureAwait(false);
+                    dbConnection.Close();
                     return;
+                }
+                catch (SocketException e)
+                {
+                    logger.Debug(e, $"Unable to connect to database on attempt {attempts}");
+                }
+                catch (DbException)
+                {
+                    return; //tcp connection established, exception is sql-related
+                }
                 attempts++;
                 await Task.Delay(TimeSpan.FromSeconds(attempts * 10));
             }
 
-            var connectionString = new NpgsqlConnectionStringBuilder(context.Database.GetDbConnection().ConnectionString);
+            var connectionString = new NpgsqlConnectionStringBuilder(dbConnection.ConnectionString);
             throw new DatabaseUnavailableException(connectionString.Database, connectionString.Host, connectionString.Port);
         }
 
