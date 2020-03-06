@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -11,21 +12,29 @@ using Npgsql;
 using SkbKontur.SqlStorageCore.Exceptions;
 using SkbKontur.SqlStorageCore.Linq;
 
+using Vostok.Metrics;
+using Vostok.Metrics.Primitives.Timer;
+
 namespace SkbKontur.SqlStorageCore
 {
     internal class SqlStorageInternal : ISqlStorage
     {
-        public SqlStorageInternal(Func<SqlDbContext> createDbContext, bool disposeContextOnOperationFinish)
+        public SqlStorageInternal(Func<SqlDbContext> createDbContext, IMetricContext? metricContext, bool disposeContextOnOperationFinish)
         {
             this.createDbContext = createDbContext;
             this.disposeContextOnOperationFinish = disposeContextOnOperationFinish;
+            this.metricContext = metricContext;
         }
 
         public async Task<TEntry?> TryReadAsync<TEntry, TKey>(TKey id, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return await WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask());
+            return WithDbContext(context =>
+                {
+                    using (metricContext.CreateTimer("Read.SingleEntry.Time").Measure())
+                        return context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask();
+                });
         }
 
         public async Task<TEntry[]> TryReadAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
@@ -194,5 +203,6 @@ namespace SkbKontur.SqlStorageCore
 
         private readonly Func<SqlDbContext> createDbContext;
         private readonly bool disposeContextOnOperationFinish;
+        private readonly IMetricContext? metricContext;
     }
 }

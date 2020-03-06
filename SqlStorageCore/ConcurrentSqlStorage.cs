@@ -16,7 +16,7 @@ namespace SkbKontur.SqlStorageCore
         public ConcurrentSqlStorage(Func<SqlDbContext> createDbContext)
         {
             this.createDbContext = createDbContext;
-            internalStorage = new SqlStorageInternal(createDbContext, disposeContextOnOperationFinish : true);
+            internalStorage = new SqlStorageInternal(createDbContext, null, disposeContextOnOperationFinish : true);
         }
 
         public Task<TEntry?> TryReadAsync(TKey id, CancellationToken cancellationToken = default)
