@@ -6,8 +6,6 @@ using FluentAssertions;
 
 using GroboContainer.NUnitExtensions;
 
-using MoreLinq.Experimental;
-
 using NUnit.Framework;
 
 using SkbKontur.Cassandra.TimeBasedUuid;

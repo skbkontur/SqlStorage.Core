@@ -8,7 +8,7 @@ namespace SkbKontur.SqlStorageCore.Json
 {
     internal class TimestampJsonConverter : JsonConverter
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             if (value == null)
                 writer.WriteNull();
@@ -16,13 +16,13 @@ namespace SkbKontur.SqlStorageCore.Json
                 writer.WriteValue(((Timestamp)value).ToDateTime());
         }
 
-        public override object? ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             return reader.TokenType switch
                 {
                     JsonToken.Null => null,
-                    JsonToken.Date => new Timestamp((DateTime)reader.Value),
-                    JsonToken.Integer => new Timestamp((long)reader.Value),
+                    JsonToken.Date => new Timestamp((DateTime)(reader.Value ?? throw new JsonSerializationException("Value must not be null"))),
+                    JsonToken.Integer => new Timestamp((long)(reader.Value ?? throw new JsonSerializationException("Value must not be null"))),
                     _ => throw new JsonSerializationException($"Unexpected token when parsing timestamp. Expected Date or Integer with value type long, got {reader.TokenType}")
                 };
         }

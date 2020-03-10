@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations.Internal;
 
+#pragma warning disable EF1001 // Internal EF Core API usage.
+
 namespace SkbKontur.SqlStorageCore.Schema
 {
     public class SqlMigrationsAnnotationProvider : NpgsqlMigrationsAnnotationProvider

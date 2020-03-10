@@ -12,6 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations;
 
 using SkbKontur.SqlStorageCore.EventLog;
 
+#pragma warning disable EF1001 // Internal EF Core API usage.
+
 namespace SkbKontur.SqlStorageCore.Schema
 {
     public class SqlMigrationsScriptGenerator : NpgsqlMigrationsSqlGenerator
@@ -163,7 +165,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             var entityContentColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityContent)).GetColumnName();
             var operationTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.ModificationType)).GetColumnName();
             var timestampColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.Timestamp)).GetColumnName();
-            var transactionIdColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.TransactionId)).GetColumnName();
+            var transactionIdColumnName = eventLogEntity.FindProperty(nameof(SqlEventLogEntry.TransactionId))?.GetColumnName();
 
             var currentTransactionTimestampTicksExpression = SqlCommonQueriesBuilder.TicksFromTimestamp(SqlCommonQueriesBuilder.CurrentTransactionTimestamp());
             var currentTransactionIdExpression = SqlCommonQueriesBuilder.CurrentTransactionId();
