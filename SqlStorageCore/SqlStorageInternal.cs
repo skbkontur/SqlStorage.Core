@@ -114,7 +114,7 @@ namespace SkbKontur.SqlStorageCore
                     if (entities.Any())
                     {
                         context.Set<TEntry>().RemoveRange(entities);
-                        context.SaveChanges();
+                        await context.SaveChangesAsync(cancellationToken);
                     }
                 });
         }
