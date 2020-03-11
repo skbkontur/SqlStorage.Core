@@ -32,7 +32,7 @@ namespace SkbKontur.SqlStorageCore
         {
             return WithDbContext(context =>
                 {
-                    using (metricContext.CreateTimer("Read.SingleEntry.Time").Measure())
+                    using (metricContext?.CreateTimer("Read.SingleEntry.Time").Measure())
                         return context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask();
                 });
         }

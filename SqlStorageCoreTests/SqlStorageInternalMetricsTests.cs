@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using FluentAssertions;
@@ -10,7 +7,8 @@ using GroboContainer.NUnitExtensions;
 
 using NUnit.Framework;
 
-using SkbKontur.SqlStorageCore.Tests.TestUtils;
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
+using SkbKontur.SqlStorageCore.Tests.TestWrappers;
 
 using Vostok.Metrics;
 using Vostok.Metrics.Models;
@@ -18,6 +16,7 @@ using Vostok.Metrics.Senders;
 
 namespace SkbKontur.SqlStorageCore.Tests
 {
+    [GroboTestSuite, WithTestSqlStorage]
     public class SqlStorageInternalMetricsTests
     {
         [Test]
@@ -25,24 +24,19 @@ namespace SkbKontur.SqlStorageCore.Tests
         {
             MetricEvent? metricEvent = null;
             var metricContext = new MetricContext(new MetricContextConfig(new AdHocMetricEventSender(e => metricEvent = e)));
-
-            var storage = new SqlStorageInternal(createDbContext, metricContext, true);
-
-            var entity = new SimpleTestEntity(5);
-            storage.CreateOrUpdate<SimpleTestEntity, int>(entity);
-            storage.TryRead<SimpleTestEntity, int>(entity.Id);
+            var storage = new ConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid>(createDbContext, metricContext);
+            var entity = new TestValueTypedPropertiesStorageElement {StringProperty = "d65dfy556"};
+            storage.CreateOrUpdate(entity);
+            storage.TryRead(entity.Id);
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
 
-        [Injected]
-        private Func<SqlDbContext> createDbContext;
 
-        private class SimpleTestEntity : ISqlEntity<int>
-        {
-            public int Id { get; set; }
-            public SimpleTestEntity(int id) => Id = id;
-        }
+
+        [Injected]
+        private readonly Func<SqlDbContext> createDbContext;
     }
 }

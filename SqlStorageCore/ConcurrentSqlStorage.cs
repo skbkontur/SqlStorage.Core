@@ -7,16 +7,18 @@ using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
+using Vostok.Metrics;
+
 namespace SkbKontur.SqlStorageCore
 {
     public class ConcurrentSqlStorage<TEntry, TKey> : IConcurrentSqlStorage<TEntry, TKey>
         where TEntry : class, ISqlEntity<TKey>
         where TKey : notnull
     {
-        public ConcurrentSqlStorage(Func<SqlDbContext> createDbContext)
+        public ConcurrentSqlStorage(Func<SqlDbContext> createDbContext, IMetricContext? metricContext = null)
         {
             this.createDbContext = createDbContext;
-            internalStorage = new SqlStorageInternal(createDbContext, null, disposeContextOnOperationFinish : true);
+            internalStorage = new SqlStorageInternal(createDbContext, metricContext, disposeContextOnOperationFinish : true);
         }
 
         public Task<TEntry?> TryReadAsync(TKey id, CancellationToken cancellationToken = default)
