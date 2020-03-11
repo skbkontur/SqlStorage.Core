@@ -35,7 +35,7 @@ namespace SkbKontur.SqlStorageCore.Schema
 
         public static EntityTypeBuilder ApplyJsonColumns(this EntityTypeBuilder entityTypeBuilder, JsonConverter[]? jsonConverters = null)
         {
-            var jsonSerializerSettings = new JsonSerializerSettings {Converters = jsonConverters};
+            var jsonSerializerSettings = new JsonSerializerSettings {Converters = jsonConverters ?? new JsonConverter[0]};
             var jsonColumnProperties = ExtractPropertiesMappedWithAttribute<JsonColumnAttribute>(entityTypeBuilder);
             foreach (var (propertyInfo, _) in jsonColumnProperties)
             {
@@ -43,7 +43,7 @@ namespace SkbKontur.SqlStorageCore.Schema
                     propertyInfo.PropertyType,
                     typeof(string),
                     o => JsonConvert.SerializeObject(o, jsonSerializerSettings),
-                    o => JsonConvert.DeserializeObject(o as string, propertyInfo.PropertyType, jsonSerializerSettings));
+                    o => JsonConvert.DeserializeObject(o as string ?? string.Empty, propertyInfo.PropertyType, jsonSerializerSettings));
                 entityTypeBuilder
                     .Property(propertyInfo.PropertyType, propertyInfo.Name)
                     .HasColumnType("json")
@@ -80,7 +80,7 @@ namespace SkbKontur.SqlStorageCore.Schema
                 var indexAttribute = attributes.Single();
                 var indexBuilder = entityTypeBuilder.HasIndex(property.Name);
                 if (indexAttribute.IndexType != IndexType.BTree)
-                    indexBuilder.ForNpgsqlHasMethod(ToNpgsqlIndexName(indexAttribute.IndexType));
+                    indexBuilder.HasMethod(ToNpgsqlIndexName(indexAttribute.IndexType));
             }
             return entityTypeBuilder;
         }

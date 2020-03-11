@@ -66,9 +66,9 @@ namespace SkbKontur.SqlStorageCore
             var logTypeBuilder = modelBuilder.Entity<SqlEventLogEntry>();
             logTypeBuilder.ApplyTimestampConverter();
 
-            logTypeBuilder.HasIndex(l => new {l.Offset}).ForNpgsqlHasMethod("brin");
+            logTypeBuilder.HasIndex(l => new {l.Offset}).HasMethod("brin");
             logTypeBuilder.Property(l => l.Id).HasDefaultValueSql("uuid_generate_v4()");
-            logTypeBuilder.Property(l => l.Offset).UseNpgsqlSerialColumn();
+            logTypeBuilder.Property(l => l.Offset).UseSerialColumn();
             logTypeBuilder.Property(l => l.EntityContent).HasColumnType("json");
 
             foreach (var type in settings.SqlEntitiesRegistry.GetEntityTypes())

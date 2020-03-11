@@ -29,45 +29,42 @@ namespace SkbKontur.SqlStorageCore.Tests
             var updateWaitHandle = new AutoResetEvent(false);
             var deleteWaitHandle = new AutoResetEvent(false);
             var expected = GenerateObjects().First();
-            var update = Task.Run(() =>
+            var update = Task.Run(async () => await sqlStorage.BatchAsync(async (storage, ct) =>
                 {
-                    sqlStorage.Batch(storage =>
-                        {
-                            storage.CreateOrUpdate<TestBatchStorageElement, Guid>(expected);
-                            updateWaitHandle.Set();
-                            deleteWaitHandle.WaitOne();
-                            var actual = storage.TryRead<TestBatchStorageElement, Guid>(expected.Id);
-                            actual.Should().BeEquivalentTo(expected);
-                        }, isolationLevel);
-                });
-            var delete = Task.Run(() =>
+                    await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(expected, cancellationToken : ct);
+                    updateWaitHandle.Set();
+                    deleteWaitHandle.WaitOne();
+                    var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(expected.Id, ct);
+                    actual.Should().BeEquivalentTo(expected);
+                }, isolationLevel));
+            var delete = Task.Run(async () =>
                 {
                     updateWaitHandle.WaitOne();
-                    sqlStorage.Delete(expected.Id);
+                    await sqlStorage.DeleteAsync(expected.Id);
                     deleteWaitHandle.Set();
                 });
             Task.WaitAll(new[] {update, delete}, TimeSpan.FromSeconds(5));
         }
 
         [Test]
-        public void TestCreateAndMultipleUpdate()
+        public async Task TestCreateAndMultipleUpdate()
         {
             var createWaitHandle = new ManualResetEvent(false);
             var entity = GenerateObjects().First();
             var expected = GenerateObjects(20).ToArray();
             expected.ForEach(e => e.Id = entity.Id);
-            var updateTasks = expected.Select(e => Task.Run(() =>
+            var updateTasks = expected.Select(e => Task.Run(async () =>
                 {
                     createWaitHandle.WaitOne();
-                    sqlStorage.CreateOrUpdate(e);
+                    await sqlStorage.CreateOrUpdateAsync(e);
                 }));
             var create = Task.Run(() =>
                 {
-                    sqlStorage.Batch(storage =>
+                    sqlStorage.BatchAsync(async (storage, ct) =>
                         {
-                            storage.CreateOrUpdate<TestBatchStorageElement, Guid>(entity);
+                            await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(entity, cancellationToken : ct);
                             createWaitHandle.Set();
-                            var actual = storage.TryRead<TestBatchStorageElement, Guid>(entity.Id);
+                            var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(entity.Id, ct);
                             actual.Should().BeEquivalentTo(entity);
                         }, isolationLevel);
                 });
@@ -76,7 +73,7 @@ namespace SkbKontur.SqlStorageCore.Tests
             Task.WaitAll(runningTasks, TimeSpan.FromSeconds(60));
             runningTasks.All(t => t.IsCompleted).Should().BeTrue();
 
-            var actualUpdated = sqlStorage.TryRead(entity.Id);
+            var actualUpdated = await sqlStorage.TryReadAsync(entity.Id);
             actualUpdated?.Value.Should().NotBe(entity.Value);
             actualUpdated?.Value.Should().BeOneOf(expected.Select(e => e.Value));
         }

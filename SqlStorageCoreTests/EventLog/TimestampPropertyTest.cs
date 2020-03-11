@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 using FluentAssertions;
 
@@ -18,11 +19,11 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
     public class TimestampPropertyTest : SqlStorageTestBase<TestTimestampElement, Guid>
     {
         [Test]
-        public void TestReadEvent()
+        public async Task TestReadEvent()
         {
             var entity = new TestTimestampElement {Id = Guid.NewGuid(), Timestamp = new Timestamp(new DateTime(2018, 08, 06, 12, 7, 5, DateTimeKind.Utc))};
-            sqlStorage.CreateOrUpdate(entity);
-            var events = eventLogRepository.GetEvents(null, 2);
+            await sqlStorage.CreateOrUpdateAsync(entity);
+            var events = await eventLogRepository.GetEventsAsync(null, 2);
             events.Length.Should().Be(1);
             events.First().EntitySnapshot.Should().BeEquivalentTo(entity);
         }

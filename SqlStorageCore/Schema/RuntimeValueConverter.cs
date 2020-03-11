@@ -11,7 +11,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             Type modelClrType,
             Type providerClrType,
             Expression<Func<object, object>> convertToProviderExpression,
-            Expression<Func<object, object>> convertFromProviderExpression)
+            Expression<Func<object, object?>> convertFromProviderExpression)
             : base(convertToProviderExpression, convertFromProviderExpression, mappingHints : null)
         {
             ModelClrType = modelClrType;
@@ -21,7 +21,7 @@ namespace SkbKontur.SqlStorageCore.Schema
         }
 
         public override Func<object, object> ConvertToProvider { get; }
-        public override Func<object, object> ConvertFromProvider { get; }
+        public override Func<object, object?> ConvertFromProvider { get; }
         public override Type ModelClrType { get; }
         public override Type ProviderClrType { get; }
     }

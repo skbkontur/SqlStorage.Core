@@ -2,6 +2,8 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -17,75 +19,74 @@ namespace SkbKontur.SqlStorageCore
             internalStorage = new SqlStorageInternal(createDbContext, disposeContextOnOperationFinish : true);
         }
 
-        public TEntry? TryRead(TKey id)
+        public Task<TEntry?> TryReadAsync(TKey id, CancellationToken cancellationToken = default)
         {
-            return internalStorage.TryRead<TEntry, TKey>(id);
+            return internalStorage.TryReadAsync<TEntry, TKey>(id, cancellationToken);
         }
 
-        public TEntry[] TryRead(TKey[] ids)
+        public Task<TEntry[]> TryReadAsync(TKey[] ids, CancellationToken cancellationToken = default)
         {
-            return internalStorage.TryRead<TEntry, TKey>(ids);
+            return internalStorage.TryReadAsync<TEntry, TKey>(ids, cancellationToken);
         }
 
-        public TEntry[] ReadAll()
+        public Task<TEntry[]> ReadAllAsync(CancellationToken cancellationToken = default)
         {
-            return internalStorage.ReadAll<TEntry, TKey>();
+            return internalStorage.ReadAllAsync<TEntry, TKey>(cancellationToken);
         }
 
-        public void CreateOrUpdate(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
+        public Task CreateOrUpdateAsync(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
         {
-            internalStorage.CreateOrUpdate<TEntry, TKey>(entity, onExpression, whenMatched);
+            return internalStorage.CreateOrUpdateAsync<TEntry, TKey>(entity, onExpression, whenMatched, cancellationToken);
         }
 
-        public void CreateOrUpdate(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null)
+        public Task CreateOrUpdateAsync(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
         {
-            internalStorage.CreateOrUpdate<TEntry, TKey>(entities, onExpression, whenMatched);
+            return internalStorage.CreateOrUpdateAsync<TEntry, TKey>(entities, onExpression, whenMatched, cancellationToken);
         }
 
-        public void Delete(TKey[] ids)
+        public Task DeleteAsync(TKey[] ids, CancellationToken cancellationToken = default)
         {
-            if (!ids.Any())
-                return;
-            InTransaction(storage => storage.Delete<TEntry, TKey>(ids), IsolationLevel.Serializable);
+            return !ids.Any() ? Task.CompletedTask : InTransactionAsync((storage, ct) => storage.DeleteAsync<TEntry, TKey>(ids, ct), IsolationLevel.Serializable, cancellationToken);
         }
 
-        public void Delete(TKey id)
+        public Task DeleteAsync(TKey id, CancellationToken cancellationToken = default)
         {
-            InTransaction(storage => storage.Delete<TEntry, TKey>(id), IsolationLevel.Serializable);
+            return InTransactionAsync((storage, ct) => storage.DeleteAsync<TEntry, TKey>(id, ct), IsolationLevel.Serializable, cancellationToken);
         }
 
-        public void Delete(Expression<Func<TEntry, bool>> criterion)
+        public Task DeleteAsync(Expression<Func<TEntry, bool>> criterion, CancellationToken cancellationToken = default)
         {
-            InTransaction(storage => storage.Delete<TEntry, TKey>(criterion), IsolationLevel.Serializable);
+            return InTransactionAsync((storage, ct) => storage.DeleteAsync<TEntry, TKey>(criterion, ct), IsolationLevel.Serializable, cancellationToken);
         }
 
-        public TEntry[] Find(Expression<Func<TEntry, bool>> criterion, int limit)
+        public Task<TEntry[]> FindAsync(Expression<Func<TEntry, bool>> criterion, int limit, CancellationToken cancellationToken = default)
         {
-            return internalStorage.Find<TEntry, TKey>(criterion, limit);
+            return internalStorage.FindAsync<TEntry, TKey>(criterion, limit, cancellationToken);
         }
 
-        public TEntry[] Find<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit)
+        public Task<TEntry[]> FindAsync<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default)
         {
-            return internalStorage.Find<TEntry, TKey, TOrderProp>(criterion, orderBy, limit);
+            return internalStorage.FindAsync<TEntry, TKey, TOrderProp>(criterion, orderBy, limit, cancellationToken);
         }
 
-        public void Batch(Action<ISqlStorage> batchAction, IsolationLevel isolationLevel)
+        public Task BatchAsync(Func<ISqlStorage, CancellationToken, Task> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
         {
-            InTransaction(batchAction, isolationLevel);
+            return InTransactionAsync(batchAction, isolationLevel, cancellationToken);
         }
 
-        private void InTransaction(Action<ISqlStorage> operation, IsolationLevel isolationLevel)
+        private async Task InTransactionAsync(Func<ISqlStorage, CancellationToken, Task> operation, IsolationLevel isolationLevel, CancellationToken cancellationToken)
         {
-            using var context = createDbContext();
-            context.Database.CreateExecutionStrategy().Execute(() =>
-                {
-                    using var ctx = createDbContext();
-                    using var transaction = ctx.Database.BeginTransaction(isolationLevel);
-                    // ReSharper disable once AccessToDisposedClosure
-                    var storage = new SqlStorageInternal(() => ctx, disposeContextOnOperationFinish : false);
-                    operation(storage);
-                    transaction.Commit();
-                });
+            await using var context = createDbContext();
+
+            async Task PerformOperation(CancellationToken ct)
+            {
+                await using var transaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
+                var storage = new SqlStorageInternal(() => context, disposeContextOnOperationFinish : false);
+                await operation(storage, ct).ConfigureAwait(false);
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+            }
+
+            await context.Database.CreateExecutionStrategy().ExecuteAsync(PerformOperation, cancellationToken).ConfigureAwait(false);
         }
 
         private readonly Func<SqlDbContext> createDbContext;

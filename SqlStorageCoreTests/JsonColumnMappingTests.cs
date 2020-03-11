@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading.Tasks;
 
 using FluentAssertions;
 
@@ -11,7 +12,7 @@ namespace SkbKontur.SqlStorageCore.Tests
     public class JsonColumnMappingTests : SqlStorageTestBase<TestJsonColumnElement, Guid>
     {
         [Test]
-        public void TestWriteReadSimple()
+        public async Task TestWriteReadSimple()
         {
             var entity = new TestJsonColumnElement
                 {
@@ -22,8 +23,8 @@ namespace SkbKontur.SqlStorageCore.Tests
                             StringProperty = "testComplexType",
                         }
                 };
-            sqlStorage.CreateOrUpdate(entity);
-            var actual = sqlStorage.TryRead(entity.Id);
+            await sqlStorage.CreateOrUpdateAsync(entity);
+            var actual = await sqlStorage.TryReadAsync(entity.Id);
             actual.Should().BeEquivalentTo(entity);
         }
     }

@@ -7,16 +7,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations;
 
 using SkbKontur.SqlStorageCore.EventLog;
+
+#pragma warning disable EF1001 // Internal EF Core API usage.
 
 namespace SkbKontur.SqlStorageCore.Schema
 {
     public class SqlMigrationsScriptGenerator : NpgsqlMigrationsSqlGenerator
     {
-        public SqlMigrationsScriptGenerator(MigrationsSqlGeneratorDependencies dependencies)
-            : base(dependencies)
+        public SqlMigrationsScriptGenerator(
+            MigrationsSqlGeneratorDependencies dependencies,
+            IMigrationsAnnotationProvider migrationsAnnotations,
+            INpgsqlOptions npgsqlOptions)
+            : base(dependencies, migrationsAnnotations, npgsqlOptions)
         {
         }
 
@@ -24,7 +30,7 @@ namespace SkbKontur.SqlStorageCore.Schema
             CreateTableOperation operation,
             IModel? model,
             MigrationCommandListBuilder builder,
-            bool terminate)
+            bool terminate = true)
         {
             var shouldCreateTrigger = operation[SqlAnnotations.EventLogTrigger] is true;
 
@@ -66,9 +72,10 @@ namespace SkbKontur.SqlStorageCore.Schema
         protected override void Generate(
             AddColumnOperation operation,
             IModel? model,
-            MigrationCommandListBuilder builder)
+            MigrationCommandListBuilder builder,
+            bool terminate = true)
         {
-            base.Generate(operation, model, builder);
+            base.Generate(operation, model, builder, terminate);
 
             ReplaceWriteToEventLogFunctionIfEventLogTableTouched(model, builder, operation.Table);
         }
@@ -76,7 +83,7 @@ namespace SkbKontur.SqlStorageCore.Schema
         private void ReplaceWriteToEventLogFunctionIfEventLogTableTouched(IModel? model, MigrationCommandListBuilder builder, string? targetTableName)
         {
             var eventLogEntity = FindEventLogEntity(model);
-            if (targetTableName == eventLogEntity.Relational().TableName)
+            if (targetTableName == eventLogEntity.GetTableName())
             {
                 builder.Append(Dependencies.SqlGenerationHelper.StatementTerminator);
                 AppendCreateOrReplaceWriteToEventLogFunction(builder, eventLogEntity);
@@ -113,7 +120,7 @@ namespace SkbKontur.SqlStorageCore.Schema
         private void AppendCreateOrReplaceWriteToEventLogFunction(MigrationCommandListBuilder builder, IEntityType eventLogEntity)
         {
             var statementTerminator = Dependencies.SqlGenerationHelper.StatementTerminator;
-            var eventLogTableName = eventLogEntity.Relational().TableName;
+            var eventLogTableName = eventLogEntity.GetTableName();
 
             if (string.IsNullOrEmpty(eventLogTableName))
                 throw new InvalidOperationException($"{nameof(SqlEventLogEntry)} table name not found. Event log model: {eventLogEntity.ToDebugString(singleLine : false)}");
@@ -154,11 +161,11 @@ namespace SkbKontur.SqlStorageCore.Schema
 
         private (string ColumnName, string ColumnValueExpression)[] GetActiveColumnsMap(IEntityType eventLogEntity, string rowDataVariableName)
         {
-            var entityTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityType)).Relational().ColumnName;
-            var entityContentColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityContent)).Relational().ColumnName;
-            var operationTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.ModificationType)).Relational().ColumnName;
-            var timestampColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.Timestamp)).Relational().ColumnName;
-            var transactionIdColumnName = eventLogEntity.FindProperty(nameof(SqlEventLogEntry.TransactionId))?.Relational().ColumnName;
+            var entityTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityType)).GetColumnName();
+            var entityContentColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.EntityContent)).GetColumnName();
+            var operationTypeColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.ModificationType)).GetColumnName();
+            var timestampColumnName = eventLogEntity.GetProperty(nameof(SqlEventLogEntry.Timestamp)).GetColumnName();
+            var transactionIdColumnName = eventLogEntity.FindProperty(nameof(SqlEventLogEntry.TransactionId))?.GetColumnName();
 
             var currentTransactionTimestampTicksExpression = SqlCommonQueriesBuilder.TicksFromTimestamp(SqlCommonQueriesBuilder.CurrentTransactionTimestamp());
             var currentTransactionIdExpression = SqlCommonQueriesBuilder.CurrentTransactionId();
