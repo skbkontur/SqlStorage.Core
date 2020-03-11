@@ -110,7 +110,7 @@ namespace SkbKontur.SqlStorageCore
 
             await WithDbContext(async context =>
                 {
-                    var entities = await context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArrayAsync(cancellationToken);
+                    var entities = await context.Set<TEntry>().Where(e => ids.Contains(e.Id)).ToArrayAsync(cancellationToken);
                     if (entities.Any())
                     {
                         context.Set<TEntry>().RemoveRange(entities);
@@ -140,7 +140,7 @@ namespace SkbKontur.SqlStorageCore
         {
             await WithDbContext(async context =>
                 {
-                    var entities = await context.Set<TEntry>().AsNoTracking().Where(criterion).ToArrayAsync(cancellationToken);
+                    var entities = await context.Set<TEntry>().Where(criterion).ToArrayAsync(cancellationToken);
                     if (entities.Any())
                     {
                         context.Set<TEntry>().RemoveRange(entities);

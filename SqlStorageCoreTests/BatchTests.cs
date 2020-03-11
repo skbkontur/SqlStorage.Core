@@ -29,12 +29,12 @@ namespace SkbKontur.SqlStorageCore.Tests
             var updateWaitHandle = new AutoResetEvent(false);
             var deleteWaitHandle = new AutoResetEvent(false);
             var expected = GenerateObjects().First();
-            var update = Task.Run(async () => await sqlStorage.BatchAsync(async storage =>
+            var update = Task.Run(async () => await sqlStorage.BatchAsync(async (storage, ct) =>
                 {
-                    await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(expected);
+                    await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(expected, cancellationToken : ct);
                     updateWaitHandle.Set();
                     deleteWaitHandle.WaitOne();
-                    var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(expected.Id);
+                    var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(expected.Id, ct);
                     actual.Should().BeEquivalentTo(expected);
                 }, isolationLevel));
             var delete = Task.Run(async () =>
@@ -60,11 +60,11 @@ namespace SkbKontur.SqlStorageCore.Tests
                 }));
             var create = Task.Run(() =>
                 {
-                    sqlStorage.BatchAsync(async storage =>
+                    sqlStorage.BatchAsync(async (storage, ct) =>
                         {
-                            await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(entity);
+                            await storage.CreateOrUpdateAsync<TestBatchStorageElement, Guid>(entity, cancellationToken : ct);
                             createWaitHandle.Set();
-                            var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(entity.Id);
+                            var actual = await storage.TryReadAsync<TestBatchStorageElement, Guid>(entity.Id, ct);
                             actual.Should().BeEquivalentTo(entity);
                         }, isolationLevel);
                 });

@@ -198,16 +198,40 @@ namespace SkbKontur.SqlStorageCore.Tests
         [Test]
         public void TestWriteAndReadThroughMultipleThreads()
         {
-            InternalTestWriteAndReadThroughMultipleThreads(GenerateObjects(testObjectsCount * 10).ToArray(), sqlStorage);
+            var objects = GenerateObjects(testObjectsCount * 10).ToArray();
+            Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(e => sqlStorage.CreateOrUpdateAsync(e).GetAwaiter().GetResult()));
+
+            var actualObjects = objects.Batch(objects.Length / 10)
+                                       .AsParallel()
+                                       .Select(batch => batch.Select(x => sqlStorage.TryReadAsync(x.Id).GetAwaiter().GetResult()))
+                                       .SelectMany(x => x);
+
+            AssertUnorderedArraysEquality(actualObjects, objects);
         }
 
         [Test]
-        public void TestWriteAndDeleteAndReadThroughMultipleThreads()
+        public async Task TestWriteAndDeleteAndReadThroughMultipleThreads()
         {
             var objects = GenerateObjects(testObjectsCount).ToArray();
             var rnd = new Random();
-            var objectToDelete = objects.OrderBy(x => rnd.Next()).Take(testObjectsCount / 3).ToArray();
-            InternalTestWriteAndDeleteAndReadThroughMultipleThreads(objects.ToArray(), objectToDelete.ToArray(), sqlStorage);
+            var objectToDelete = objects.OrderBy(x => rnd.Next()).Take(testObjectsCount / 4).ToArray();
+            var creationTasks = objects.Batch(objects.Length / 10)
+                                       .Select(batch => sqlStorage.CreateOrUpdateAsync(batch.ToArray()))
+                                       .ToArray();
+            await Task.WhenAll(creationTasks).ConfigureAwait(false);
+
+            var deletionTasks = objectToDelete.Batch(objectToDelete.Length / 5)
+                                              .Select(batch => sqlStorage.DeleteAsync(batch.Select(e => e.Id).ToArray()))
+                                              .ToArray();
+            await Task.WhenAll(deletionTasks).ConfigureAwait(false);
+
+            var actualObjects = objects.ToArray().Batch(objects.ToArray().Length / 10)
+                                       .AsParallel()
+                                       .Select(batch => batch.Select(x => sqlStorage.TryReadAsync(x.Id).GetAwaiter().GetResult()))
+                                       .SelectMany(x => x)
+                                       .Where(x => x != null);
+
+            AssertUnorderedArraysEquality(actualObjects, objects.Except(objectToDelete));
         }
 
         [Test]
@@ -221,32 +245,6 @@ namespace SkbKontur.SqlStorageCore.Tests
             var allActualObjects = await sqlStorage.ReadAllAsync();
             allActualObjects.Length.Should().Be(objects.Length - objectsToDelete.Length);
             allActualObjects.Should().NotContain(objectsToDelete);
-        }
-
-        private static void InternalTestWriteAndDeleteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, TestValueTypedPropertiesStorageElement[] objectsToDelete, IConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
-        {
-            Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(e => storage.CreateOrUpdateAsync(e).GetAwaiter().GetResult()));
-            Parallel.ForEach(objectsToDelete.Batch(objectsToDelete.Length / 10), batch => batch.ForEach(x => storage.DeleteAsync(new[] {x.Id}).GetAwaiter().GetResult()));
-
-            var actualObjects = objects.Batch(objects.Length / 10)
-                                       .AsParallel()
-                                       .Select(batch => batch.Select(x => storage.TryReadAsync(x.Id).GetAwaiter().GetResult()))
-                                       .SelectMany(x => x)
-                                       .Where(x => x != null);
-
-            AssertUnorderedArraysEquality(actualObjects, objects.Except(objectsToDelete).ToArray());
-        }
-
-        private static void InternalTestWriteAndReadThroughMultipleThreads(TestValueTypedPropertiesStorageElement[] objects, IConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage)
-        {
-            Parallel.ForEach(objects.Batch(objects.Length / 10), batch => batch.ForEach(e => storage.CreateOrUpdateAsync(e).GetAwaiter().GetResult()));
-
-            var actualObjects = objects.Batch(objects.Length / 10)
-                                       .AsParallel()
-                                       .Select(batch => batch.Select(x => storage.TryReadAsync(x.Id).GetAwaiter().GetResult()))
-                                       .SelectMany(x => x);
-
-            AssertUnorderedArraysEquality(actualObjects, objects);
         }
 
         private const int testObjectsCount = 100;

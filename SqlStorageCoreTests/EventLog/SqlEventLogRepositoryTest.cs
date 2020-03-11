@@ -248,16 +248,16 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
             var firstTransactionReady = new AutoResetEvent(false);
             var secondTransactionFinish = new AutoResetEvent(false);
 
-            var firstTransaction = sqlStorage.BatchAsync(async storage =>
+            var firstTransaction = sqlStorage.BatchAsync(async (storage, ct) =>
                 {
-                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0], cancellationToken : ct);
                     firstTransactionReady.Set();
                     secondTransactionFinish.WaitOne();
-                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0], cancellationToken : ct);
                 }, firstTransactionIsolationLevel).ConfigureAwait(false);
 
             firstTransactionReady.WaitOne();
-            await sqlStorage.BatchAsync(async storage => await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
+            await sqlStorage.BatchAsync(async (storage, ct) => await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[1], cancellationToken : ct), secondTransactionIsolationLevel);
             var secondTransactionEvents = await eventLogRepository.GetEventsAsync(fromOffsetExclusive, 1);
             secondTransactionEvents.Should().BeEmpty();
 
@@ -279,16 +279,16 @@ namespace SkbKontur.SqlStorageCore.Tests.EventLog
             var firstTransactionReady = new AutoResetEvent(false);
             var secondTransactionFinish = new AutoResetEvent(false);
 
-            var firstTransaction = sqlStorage.BatchAsync(async storage =>
+            var firstTransaction = sqlStorage.BatchAsync(async (storage, ct) =>
                 {
-                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0], cancellationToken : ct);
                     firstTransactionReady.Set();
                     secondTransactionFinish.WaitOne();
-                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0]);
+                    await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[0], cancellationToken : ct);
                 }, firstTransactionIsolationLevel).ConfigureAwait(false);
 
             firstTransactionReady.WaitOne();
-            await sqlStorage.BatchAsync(async storage => await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[1]), secondTransactionIsolationLevel);
+            await sqlStorage.BatchAsync(async (storage, ct) => await storage.CreateOrUpdateAsync<TEntity, TKey>(entities[1], cancellationToken : ct), secondTransactionIsolationLevel);
             (await eventLogRepository.GetEventsCountAsync(fromOffsetExclusive)).Should().Be(0);
 
             secondTransactionFinish.Set();

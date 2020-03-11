@@ -27,6 +27,6 @@ namespace SkbKontur.SqlStorageCore
 
         Task<TEntry[]> FindAsync<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default);
 
-        Task BatchAsync(Func<ISqlStorage, Task> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
+        Task BatchAsync(Func<ISqlStorage, CancellationToken, Task> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
     }
 }

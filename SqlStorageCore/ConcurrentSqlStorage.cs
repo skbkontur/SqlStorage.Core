@@ -19,74 +19,74 @@ namespace SkbKontur.SqlStorageCore
             internalStorage = new SqlStorageInternal(createDbContext, disposeContextOnOperationFinish : true);
         }
 
-        public async Task<TEntry?> TryReadAsync(TKey id, CancellationToken cancellationToken = default)
+        public Task<TEntry?> TryReadAsync(TKey id, CancellationToken cancellationToken = default)
         {
-            return await internalStorage.TryReadAsync<TEntry, TKey>(id, cancellationToken);
+            return internalStorage.TryReadAsync<TEntry, TKey>(id, cancellationToken);
         }
 
-        public async Task<TEntry[]> TryReadAsync(TKey[] ids, CancellationToken cancellationToken = default)
+        public Task<TEntry[]> TryReadAsync(TKey[] ids, CancellationToken cancellationToken = default)
         {
-            return await internalStorage.TryReadAsync<TEntry, TKey>(ids, cancellationToken);
+            return internalStorage.TryReadAsync<TEntry, TKey>(ids, cancellationToken);
         }
 
-        public async Task<TEntry[]> ReadAllAsync(CancellationToken cancellationToken = default)
+        public Task<TEntry[]> ReadAllAsync(CancellationToken cancellationToken = default)
         {
-            return await internalStorage.ReadAllAsync<TEntry, TKey>(cancellationToken);
+            return internalStorage.ReadAllAsync<TEntry, TKey>(cancellationToken);
         }
 
-        public async Task CreateOrUpdateAsync(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
+        public Task CreateOrUpdateAsync(TEntry entity, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
         {
-            await internalStorage.CreateOrUpdateAsync<TEntry, TKey>(entity, onExpression, whenMatched, cancellationToken);
+            return internalStorage.CreateOrUpdateAsync<TEntry, TKey>(entity, onExpression, whenMatched, cancellationToken);
         }
 
-        public async Task CreateOrUpdateAsync(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
+        public Task CreateOrUpdateAsync(TEntry[] entities, Expression<Func<TEntry, object>>? onExpression = null, Expression<Func<TEntry, TEntry, TEntry>>? whenMatched = null, CancellationToken cancellationToken = default)
         {
-            await internalStorage.CreateOrUpdateAsync<TEntry, TKey>(entities, onExpression, whenMatched, cancellationToken);
+            return internalStorage.CreateOrUpdateAsync<TEntry, TKey>(entities, onExpression, whenMatched, cancellationToken);
         }
 
-        public async Task DeleteAsync(TKey[] ids, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(TKey[] ids, CancellationToken cancellationToken = default)
         {
-            if (!ids.Any())
-                return;
-            await InTransactionAsync(async storage => await storage.DeleteAsync<TEntry, TKey>(ids, cancellationToken), IsolationLevel.Serializable, cancellationToken);
+            return !ids.Any() ? Task.CompletedTask : InTransactionAsync((storage, ct) => storage.DeleteAsync<TEntry, TKey>(ids, ct), IsolationLevel.Serializable, cancellationToken);
         }
 
-        public async Task DeleteAsync(TKey id, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(TKey id, CancellationToken cancellationToken = default)
         {
-            await InTransactionAsync(async storage => await storage.DeleteAsync<TEntry, TKey>(id, cancellationToken), IsolationLevel.Serializable, cancellationToken);
+            return InTransactionAsync((storage, ct) => storage.DeleteAsync<TEntry, TKey>(id, ct), IsolationLevel.Serializable, cancellationToken);
         }
 
-        public async Task DeleteAsync(Expression<Func<TEntry, bool>> criterion, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(Expression<Func<TEntry, bool>> criterion, CancellationToken cancellationToken = default)
         {
-            await InTransactionAsync(storage => storage.DeleteAsync<TEntry, TKey>(criterion, cancellationToken), IsolationLevel.Serializable, cancellationToken);
+            return InTransactionAsync((storage, ct) => storage.DeleteAsync<TEntry, TKey>(criterion, ct), IsolationLevel.Serializable, cancellationToken);
         }
 
-        public async Task<TEntry[]> FindAsync(Expression<Func<TEntry, bool>> criterion, int limit, CancellationToken cancellationToken = default)
+        public Task<TEntry[]> FindAsync(Expression<Func<TEntry, bool>> criterion, int limit, CancellationToken cancellationToken = default)
         {
-            return await internalStorage.FindAsync<TEntry, TKey>(criterion, limit, cancellationToken);
+            return internalStorage.FindAsync<TEntry, TKey>(criterion, limit, cancellationToken);
         }
 
-        public async Task<TEntry[]> FindAsync<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default)
+        public Task<TEntry[]> FindAsync<TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default)
         {
-            return await internalStorage.FindAsync<TEntry, TKey, TOrderProp>(criterion, orderBy, limit, cancellationToken);
+            return internalStorage.FindAsync<TEntry, TKey, TOrderProp>(criterion, orderBy, limit, cancellationToken);
         }
 
-        public async Task BatchAsync(Func<ISqlStorage, Task> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+        public Task BatchAsync(Func<ISqlStorage, CancellationToken, Task> batchAction, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
         {
-            await InTransactionAsync(batchAction, isolationLevel, cancellationToken);
+            return InTransactionAsync(batchAction, isolationLevel, cancellationToken);
         }
 
-        private async Task InTransactionAsync(Func<ISqlStorage, Task> operation, IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+        private async Task InTransactionAsync(Func<ISqlStorage, CancellationToken, Task> operation, IsolationLevel isolationLevel, CancellationToken cancellationToken)
         {
             await using var context = createDbContext();
-            await context.Database.CreateExecutionStrategy().ExecuteAsync(async cts =>
-                {
-                    await using var ctx = createDbContext();
-                    await using var transaction = await ctx.Database.BeginTransactionAsync(isolationLevel, cts);
-                    var storage = new SqlStorageInternal(() => ctx, disposeContextOnOperationFinish : false);
-                    await operation(storage);
-                    transaction.Commit();
-                }, cancellationToken);
+
+            async Task PerformOperation(CancellationToken ct)
+            {
+                await using var transaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
+                var storage = new SqlStorageInternal(() => context, disposeContextOnOperationFinish : false);
+                await operation(storage, ct).ConfigureAwait(false);
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+            }
+
+            await context.Database.CreateExecutionStrategy().ExecuteAsync(PerformOperation, cancellationToken).ConfigureAwait(false);
         }
 
         private readonly Func<SqlDbContext> createDbContext;
