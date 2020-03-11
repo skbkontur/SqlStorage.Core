@@ -5,6 +5,8 @@ using GroboContainer.Infection;
 
 using Newtonsoft.Json;
 
+using SkbKontur.SqlStorageCore.Tests.TestEntities;
+
 namespace SkbKontur.SqlStorageCore.Tests.TestUtils
 {
     [IgnoredImplementation]
@@ -33,6 +35,6 @@ namespace SkbKontur.SqlStorageCore.Tests.TestUtils
 
         public Assembly? MigrationsAssembly { get; }
 
-        public JsonConverter[]? CustomJsonConverters { get; set; }
+        public JsonConverter[]? CustomJsonConverters { get; set; } = {new TestCustomJsonConverterSqlEntryJsonConverter()};
     }
 }

@@ -38,17 +38,17 @@ namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 
             return reader.TokenType switch
             {
-                JsonToken.String => TryParse(reader.ReadAsString()),
+                JsonToken.String => TryParse(reader.Value?.ToString() ?? string.Empty),
                 _ => throw new JsonSerializationException("Unexpected token when parsing")
             };
         }
 
-        private static TestCustomJsonConverterColumnElement TryParse(string? jsonString)
+        private static TestCustomJsonConverterColumnElement TryParse(string jsonString)
         {
             var pattern = $@"(\d+)?{FieldsDelimiter}(.*)";
             var match = Regex.Match(jsonString, pattern);
             if (!match.Success)
-                throw new JsonSerializationException($"Unexpected token when parsing");
+                throw new JsonSerializationException("Unexpected token when parsing");
             return new TestCustomJsonConverterColumnElement(int.Parse(match.Groups[1].Value), match.Groups[2].Value);
         }
     }
