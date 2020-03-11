@@ -27,10 +27,10 @@ namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 
     public class TestCustomJsonConverterSqlEntryJsonConverter : JsonConverter<TestCustomJsonConverterColumnElement>
     {
-        public const string FieldsDelimeter = "~:~";
+        public const string FieldsDelimiter = "~:~";
         public override void WriteJson(JsonWriter writer, TestCustomJsonConverterColumnElement value, JsonSerializer serializer)
         {
-            writer.WriteValue($"{value.IntProperty}{FieldsDelimeter}{value.StringProperty}");
+            writer.WriteValue($"{value.IntProperty}{FieldsDelimiter}{value.StringProperty}");
         }
 
         public override TestCustomJsonConverterColumnElement ReadJson(JsonReader reader, Type objectType, TestCustomJsonConverterColumnElement existingValue, bool hasExistingValue, JsonSerializer serializer)
@@ -43,9 +43,9 @@ namespace SkbKontur.SqlStorageCore.Tests.TestEntities
             };
         }
 
-        private static TestCustomJsonConverterColumnElement TryParse(string jsonString)
+        private static TestCustomJsonConverterColumnElement TryParse(string? jsonString)
         {
-            var pattern = $@"(\d+)?{FieldsDelimeter}(.*)";
+            var pattern = $@"(\d+)?{FieldsDelimiter}(.*)";
             var match = Regex.Match(jsonString, pattern);
             if (!match.Success)
                 throw new JsonSerializationException($"Unexpected token when parsing");
