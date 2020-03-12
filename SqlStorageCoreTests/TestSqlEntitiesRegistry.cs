@@ -14,6 +14,7 @@ namespace SkbKontur.SqlStorageCore.Tests
             RegisterEntityType<TestJsonArrayColumnElement, Guid>();
             RegisterEntityType<TestUpsertSqlEntry, Guid>();
             RegisterEntityType<TestBatchStorageElement, Guid>();
+            RegisterEntityType<TestCustomJsonConverterSqlEntity, Guid>();
         }
     }
 }
