@@ -11,6 +11,7 @@ using SkbKontur.SqlStorageCore.Tests.TestUtils;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Console;
 using Vostok.Logging.Microsoft;
+using Vostok.Metrics;
 
 using LogLevel = Vostok.Logging.Abstractions.LogLevel;
 
@@ -25,6 +26,8 @@ namespace SkbKontur.SqlStorageCore.Tests.TestWrappers
             container.Configurator.ForAbstraction<ILog>().UseInstances(consoleLog);
             var loggerFactory = new LoggerFactory(new[] {new VostokLoggerProvider(consoleLog.WithMinimumLevel(LogLevel.Warn))});
             container.Configurator.ForAbstraction<ILoggerFactory>().UseInstances(loggerFactory);
+            container.Configurator.ForAbstraction<IMetricContext>().UseInstances(new DevNullMetricContext());
+
             container.Configurator.ForAbstraction<ISqlDbContextSettings>().UseInstances(new TestSqlDbContextSettings(DbName, TestSqlEntitiesRegistry, MigrationsAssembly));
             container.Get<SqlStorageMigrator>().MigrateAsync().GetAwaiter().GetResult();
         }

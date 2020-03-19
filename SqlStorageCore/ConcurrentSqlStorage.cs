@@ -18,6 +18,7 @@ namespace SkbKontur.SqlStorageCore
         public ConcurrentSqlStorage(Func<SqlDbContext> createDbContext, IMetricContext? metricContext = null)
         {
             this.createDbContext = createDbContext;
+            this.metricContext = metricContext;
             internalStorage = new SqlStorageInternal(createDbContext, metricContext, disposeContextOnOperationFinish : true);
         }
 
@@ -83,7 +84,7 @@ namespace SkbKontur.SqlStorageCore
             async Task PerformOperation(CancellationToken ct)
             {
                 await using var transaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
-                var storage = new SqlStorageInternal(() => context, disposeContextOnOperationFinish : false);
+                var storage = new SqlStorageInternal(() => context, metricContext, disposeContextOnOperationFinish : false);
                 await operation(storage, ct).ConfigureAwait(false);
                 await transaction.CommitAsync(ct).ConfigureAwait(false);
             }
@@ -92,6 +93,7 @@ namespace SkbKontur.SqlStorageCore
         }
 
         private readonly Func<SqlDbContext> createDbContext;
+        private readonly IMetricContext? metricContext;
         private readonly SqlStorageInternal internalStorage;
     }
 }

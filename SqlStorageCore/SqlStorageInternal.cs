@@ -30,11 +30,7 @@ namespace SkbKontur.SqlStorageCore
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return WithDbContext(context =>
-                {
-                    using (metricContext?.CreateTimer("Read.SingleEntry.Time").Measure())
-                        return context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask();
-                });
+            return WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask());
         }
 
         public async Task<TEntry[]> TryReadAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
@@ -172,9 +168,9 @@ namespace SkbKontur.SqlStorageCore
             return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArrayAsync(cancellationToken));
         }
 
-        private async Task WithDbContext(Func<SqlDbContext, Task> action)
+        private async Task WithDbContext(Func<SqlDbContext, Task> action, string timerName = "Time")
         {
-            if (disposeContextOnOperationFinish)
+            using (metricContext?.CreateTimer(timerName).Measure())
             {
                 await using var context = createDbContext();
                 await action(context);
@@ -183,14 +179,18 @@ namespace SkbKontur.SqlStorageCore
                 await action(createDbContext());
         }
 
-        private async Task<TResult> WithDbContext<TResult>(Func<SqlDbContext, Task<TResult>> func)
+        private async Task<TResult> WithDbContext<TResult>(Func<SqlDbContext, Task<TResult>> func, string timerName = "Time")
         {
-            if (disposeContextOnOperationFinish)
+            using (metricContext?.CreateTimer(timerName).Measure())
             {
+                if (disposeContextOnOperationFinish)
+                {
                 await using var context = createDbContext();
                 return await func(context);
-            }
+                }
+            
             return await func(createDbContext());
+            }
         }
 
         private static SqlStorageException ToSqlStorageException(PostgresException postgresException)
