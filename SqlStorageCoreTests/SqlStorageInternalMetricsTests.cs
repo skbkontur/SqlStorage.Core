@@ -36,6 +36,7 @@ namespace SkbKontur.SqlStorageCore.Tests
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
+
         [Test]
         public async Task TestTimerReadMany()
         {
@@ -154,21 +155,19 @@ namespace SkbKontur.SqlStorageCore.Tests
             metricEvent!.Value.Should().BeLessThan(1);
         }
 
-
         private const string stringProperty = "d65dfy556";
         private const int entitiesCount = 1000;
 
         private TestValueTypedPropertiesStorageElement[] GetEntities() =>
-             Enumerable.Range(0, entitiesCount).Select(x => GetEntity()).ToArray();
+            Enumerable.Range(0, entitiesCount).Select(x => GetEntity()).ToArray();
 
         private TestValueTypedPropertiesStorageElement GetEntity() =>
-            new TestValueTypedPropertiesStorageElement { Id = Guid.NewGuid(), StringProperty = stringProperty };
+            new TestValueTypedPropertiesStorageElement {Id = Guid.NewGuid(), StringProperty = stringProperty};
 
         private ConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> GetStorage(MetricContext metricContext) =>
             new ConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid>(createDbContext, metricContext);
 
         [Injected]
         private readonly Func<SqlDbContext> createDbContext;
-
     }
 }

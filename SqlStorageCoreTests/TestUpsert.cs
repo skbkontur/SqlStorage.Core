@@ -73,8 +73,8 @@ namespace SkbKontur.SqlStorageCore.Tests
 
             Func<Task> creating = async () => await sqlStorage.CreateOrUpdateAsync(entity);
             (await creating.Should().ThrowAsync<NotNullViolationException>())
-                    .Which.ColumnName
-                    .Should().Be(nameof(entity.RequiredValue));
+                .Which.ColumnName
+                .Should().Be(nameof(entity.RequiredValue));
         }
 
         [Test]
@@ -86,8 +86,8 @@ namespace SkbKontur.SqlStorageCore.Tests
             entity.RequiredValue = null;
             Func<Task> updating = async () => await sqlStorage.CreateOrUpdateAsync(entity);
             (await updating.Should().ThrowAsync<NotNullViolationException>())
-                    .Which.ColumnName
-                    .Should().Be(nameof(entity.RequiredValue));
+                .Which.ColumnName
+                .Should().Be(nameof(entity.RequiredValue));
         }
 
         [Test]

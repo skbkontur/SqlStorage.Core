@@ -15,19 +15,20 @@ namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 
     public class TestCustomJsonConverterColumnElement
     {
-        public int IntProperty { get; }
-        public string StringProperty { get; }
-
         public TestCustomJsonConverterColumnElement(int intProperty, string stringProperty)
         {
             IntProperty = intProperty;
             StringProperty = stringProperty;
         }
+
+        public int IntProperty { get; }
+        public string StringProperty { get; }
     }
 
     public class TestCustomJsonConverterSqlEntryJsonConverter : JsonConverter<TestCustomJsonConverterColumnElement>
     {
         public const string FieldsDelimiter = "~:~";
+
         public override void WriteJson(JsonWriter writer, TestCustomJsonConverterColumnElement value, JsonSerializer serializer)
         {
             writer.WriteValue($"{value.IntProperty}{FieldsDelimiter}{value.StringProperty}");
@@ -35,12 +36,11 @@ namespace SkbKontur.SqlStorageCore.Tests.TestEntities
 
         public override TestCustomJsonConverterColumnElement ReadJson(JsonReader reader, Type objectType, TestCustomJsonConverterColumnElement existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-
             return reader.TokenType switch
-            {
-                JsonToken.String => TryParse(reader.Value?.ToString() ?? string.Empty),
-                _ => throw new JsonSerializationException("Unexpected token when parsing")
-            };
+                {
+                    JsonToken.String => TryParse(reader.Value?.ToString() ?? string.Empty),
+                    _ => throw new JsonSerializationException("Unexpected token when parsing")
+                };
         }
 
         private static TestCustomJsonConverterColumnElement TryParse(string jsonString)
