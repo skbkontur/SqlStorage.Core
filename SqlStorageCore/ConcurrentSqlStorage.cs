@@ -7,16 +7,19 @@ using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
+using Vostok.Metrics;
+
 namespace SkbKontur.SqlStorageCore
 {
     public class ConcurrentSqlStorage<TEntry, TKey> : IConcurrentSqlStorage<TEntry, TKey>
         where TEntry : class, ISqlEntity<TKey>
         where TKey : notnull
     {
-        public ConcurrentSqlStorage(Func<SqlDbContext> createDbContext)
+        public ConcurrentSqlStorage(Func<SqlDbContext> createDbContext, IMetricContext? metricContext = null)
         {
             this.createDbContext = createDbContext;
-            internalStorage = new SqlStorageInternal(createDbContext, disposeContextOnOperationFinish : true);
+            this.metricContext = metricContext;
+            internalStorage = new SqlStorageInternal(createDbContext, metricContext, disposeContextOnOperationFinish : true);
         }
 
         public Task<TEntry?> TryReadAsync(TKey id, CancellationToken cancellationToken = default)
@@ -81,7 +84,7 @@ namespace SkbKontur.SqlStorageCore
             async Task PerformOperation(CancellationToken ct)
             {
                 await using var transaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
-                var storage = new SqlStorageInternal(() => context, disposeContextOnOperationFinish : false);
+                var storage = new SqlStorageInternal(() => context, metricContext, disposeContextOnOperationFinish : false);
                 await operation(storage, ct).ConfigureAwait(false);
                 await transaction.CommitAsync(ct).ConfigureAwait(false);
             }
@@ -90,6 +93,7 @@ namespace SkbKontur.SqlStorageCore
         }
 
         private readonly Func<SqlDbContext> createDbContext;
+        private readonly IMetricContext? metricContext;
         private readonly SqlStorageInternal internalStorage;
     }
 }

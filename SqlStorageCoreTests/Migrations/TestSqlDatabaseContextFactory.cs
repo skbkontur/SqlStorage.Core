@@ -22,7 +22,7 @@ namespace SkbKontur.SqlStorageCore.Tests.Migrations
         {
             var container = new Container(new ContainerConfiguration(AssembliesLoader.Load(), nameof(TestSqlDatabaseContextFactory), ContainerMode.UseShortLog));
             var vostokLoggerProvider = new VostokLoggerProvider(new ConsoleLog());
-            container.Configurator.ForAbstraction<ILoggerFactory>().UseInstances(new LoggerFactory(new[] { vostokLoggerProvider }));
+            container.Configurator.ForAbstraction<ILoggerFactory>().UseInstances(new LoggerFactory(new[] {vostokLoggerProvider}));
             var sqlDbContextSettings = new TestSqlDbContextSettings(WithTestSqlStorage.DbName, WithTestSqlStorage.TestSqlEntitiesRegistry, WithTestSqlStorage.MigrationsAssembly);
             container.Configurator.ForAbstraction<ISqlDbContextSettings>().UseInstances(sqlDbContextSettings);
             return container.Get<SqlDbContext>();

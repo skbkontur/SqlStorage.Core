@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace SkbKontur.SqlStorageCore.EventLog
 {
     public interface ISqlEventLogRepository<TEntity, TKey>

@@ -8,7 +8,7 @@ namespace SkbKontur.SqlStorageCore
 {
     public static class SqlStorageExtensions
     {
-        public static async Task<TEntity?>FindSingleOrDefaultAsync<TEntity, TKey>(this IConcurrentSqlStorage<TEntity, TKey> storage, Expression<Func<TEntity, bool>> criterion, CancellationToken cancellationToken = default)
+        public static async Task<TEntity?> FindSingleOrDefaultAsync<TEntity, TKey>(this IConcurrentSqlStorage<TEntity, TKey> storage, Expression<Func<TEntity, bool>> criterion, CancellationToken cancellationToken = default)
             where TEntity : class, ISqlEntity<TKey>
             where TKey : notnull
         {

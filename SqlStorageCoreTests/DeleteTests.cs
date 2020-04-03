@@ -41,7 +41,7 @@ namespace SkbKontur.SqlStorageCore.Tests
         [Test]
         public async Task DeleteNonExisting()
         {
-            Action nonexistentDeletion =   () => sqlStorage.DeleteAsync(Guid.NewGuid());
+            Action nonexistentDeletion = () => sqlStorage.DeleteAsync(Guid.NewGuid());
             Func<Task> func = () => sqlStorage.DeleteAsync(Guid.NewGuid());
             await func.Should().NotThrowAsync();
             nonexistentDeletion.Should().NotThrow();
