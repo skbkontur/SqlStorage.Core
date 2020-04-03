@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-ef"
       ]
+    },
+    "benchmarkdotnet.tool": {
+      "version": "0.12.0",
+      "commands": [
+        "dotnet-benchmark"
+      ]
     }
   }
 }
