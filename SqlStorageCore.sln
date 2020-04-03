@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlStorageCore", "SqlStorag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlStorageCoreTests", "SqlStorageCoreTests\SqlStorageCoreTests.csproj", "{AEFCD563-F328-426F-91B4-16440D1EC47E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlStorageCore.Benchmarks", "SqlStorageCore.Benchmarks\SqlStorageCore.Benchmarks.csproj", "{0D42887C-FBC8-4F1F-A850-401440838223}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{AEFCD563-F328-426F-91B4-16440D1EC47E}.Release|x64.Build.0 = Release|Any CPU
 		{AEFCD563-F328-426F-91B4-16440D1EC47E}.Release|x86.ActiveCfg = Release|Any CPU
 		{AEFCD563-F328-426F-91B4-16440D1EC47E}.Release|x86.Build.0 = Release|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Debug|x64.Build.0 = Debug|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Debug|x86.Build.0 = Debug|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Release|x64.ActiveCfg = Release|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Release|x64.Build.0 = Release|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Release|x86.ActiveCfg = Release|Any CPU
+		{0D42887C-FBC8-4F1F-A850-401440838223}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +29,7 @@ namespace SkbKontur.SqlStorageCore
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return await WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] { id }, cancellationToken).AsTask(), "Read.SingleEntry.Time");
+            return await WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask(), "Read.SingleEntry.Time");
         }
 
         public async Task<TEntry[]> TryReadAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
@@ -130,7 +129,7 @@ namespace SkbKontur.SqlStorageCore
         {
             await WithDbContext(async context =>
                 {
-                    var entity = await context.Set<TEntry>().FindAsync(new object[] { id }, cancellationToken);
+                    var entity = await context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken);
                     if (entity != null)
                     {
                         context.Set<TEntry>().Remove(entity);
@@ -184,7 +183,7 @@ namespace SkbKontur.SqlStorageCore
             }
         }
 
-        private async Task<TResult> WithDbContext<TResult>(Func<SqlDbContext, Task<TResult>> func,  string timerName)
+        private async Task<TResult> WithDbContext<TResult>(Func<SqlDbContext, Task<TResult>> func, string timerName)
         {
             using (metricContext?.CreateTimer(timerName).Measure())
             {
