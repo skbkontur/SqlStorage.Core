@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -30,7 +30,7 @@ namespace SkbKontur.SqlStorageCore
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken).AsTask());
+            return await WithDbContext(context => context.Set<TEntry>().FindAsync(new object[] { id }, cancellationToken).AsTask(), "Read.SingleEntry.Time");
         }
 
         public async Task<TEntry[]> TryReadAsync<TEntry, TKey>(TKey[] ids, CancellationToken cancellationToken = default)
@@ -40,14 +40,14 @@ namespace SkbKontur.SqlStorageCore
             if (!ids.Any())
                 return new TEntry[0];
 
-            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArrayAsync(cancellationToken));
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(e => ids.Contains(e.Id)).ToArrayAsync(cancellationToken), "Read.Entries.Time");
         }
 
         public async Task<TEntry[]> ReadAllAsync<TEntry, TKey>(CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArrayAsync(cancellationToken));
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().ToArrayAsync(cancellationToken), "Read.All.Time");
         }
 
         public async Task CreateOrUpdateAsync<TEntry, TKey>(TEntry entity,
@@ -67,7 +67,7 @@ namespace SkbKontur.SqlStorageCore
                             upsertCommandBuilder = upsertCommandBuilder.WhenMatched(whenMatched);
                         }
                         await upsertCommandBuilder.RunAsync(cancellationToken);
-                    });
+                    }, "CreateOrUpdate.Entry.Time");
             }
             catch (PostgresException exception)
             {
@@ -98,7 +98,7 @@ namespace SkbKontur.SqlStorageCore
                             }
                             await upsertCommandBuilder.RunAsync(cancellationToken);
                         }
-                    });
+                    }, "CreateOrUpdate.Entries.Time");
             }
             catch (PostgresException exception)
             {
@@ -121,7 +121,7 @@ namespace SkbKontur.SqlStorageCore
                         context.Set<TEntry>().RemoveRange(entities);
                         await context.SaveChangesAsync(cancellationToken);
                     }
-                });
+                }, "Delete.Entries.Time");
         }
 
         public async Task DeleteAsync<TEntry, TKey>(TKey id, CancellationToken cancellationToken = default)
@@ -130,13 +130,13 @@ namespace SkbKontur.SqlStorageCore
         {
             await WithDbContext(async context =>
                 {
-                    var entity = await context.Set<TEntry>().FindAsync(new object[] {id}, cancellationToken);
+                    var entity = await context.Set<TEntry>().FindAsync(new object[] { id }, cancellationToken);
                     if (entity != null)
                     {
                         context.Set<TEntry>().Remove(entity);
                         await context.SaveChangesAsync(cancellationToken);
                     }
-                });
+                }, "Delete.SingleEntry.Time");
         }
 
         public async Task DeleteAsync<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, CancellationToken cancellationToken = default)
@@ -151,45 +151,50 @@ namespace SkbKontur.SqlStorageCore
                         context.Set<TEntry>().RemoveRange(entities);
                         await context.SaveChangesAsync(cancellationToken);
                     }
-                });
+                }, "Delete.ByCriterion.Time");
         }
 
         public async Task<TEntry[]> FindAsync<TEntry, TKey>(Expression<Func<TEntry, bool>> criterion, int limit, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArrayAsync(cancellationToken));
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).Take(limit).ToArrayAsync(cancellationToken), "Find.ByCriterion.Time");
         }
 
         public async Task<TEntry[]> FindAsync<TEntry, TKey, TOrderProp>(Expression<Func<TEntry, bool>> criterion, Expression<Func<TEntry, TOrderProp>> orderBy, int limit, CancellationToken cancellationToken = default)
             where TEntry : class, ISqlEntity<TKey>
             where TKey : notnull
         {
-            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArrayAsync(cancellationToken));
+            return await WithDbContext(context => context.Set<TEntry>().AsNoTracking().Where(criterion).OrderBy(orderBy).Take(limit).ToArrayAsync(cancellationToken), "Find.ByCriterionAndOrdered.Time");
         }
 
-        private async Task WithDbContext(Func<SqlDbContext, Task> action, string timerName = "Time")
-        {
-            using (metricContext?.CreateTimer(timerName).Measure())
-            {
-                await using var context = createDbContext();
-                await action(context);
-            }
-            else
-                await action(createDbContext());
-        }
-
-        private async Task<TResult> WithDbContext<TResult>(Func<SqlDbContext, Task<TResult>> func, string timerName = "Time")
+        private async Task WithDbContext(Func<SqlDbContext, Task> action, string timerName)
         {
             using (metricContext?.CreateTimer(timerName).Measure())
             {
                 if (disposeContextOnOperationFinish)
                 {
-                await using var context = createDbContext();
-                return await func(context);
+                    await using var context = createDbContext();
+                    await action(context);
                 }
-            
-            return await func(createDbContext());
+                else
+                {
+                    await action(createDbContext());
+                }
+            }
+        }
+
+        private async Task<TResult> WithDbContext<TResult>(Func<SqlDbContext, Task<TResult>> func,  string timerName)
+        {
+            using (metricContext?.CreateTimer(timerName).Measure())
+            {
+                if (disposeContextOnOperationFinish)
+                {
+                    await using var context = createDbContext();
+                    return await func(context);
+                }
+
+                return await func(createDbContext());
             }
         }
 

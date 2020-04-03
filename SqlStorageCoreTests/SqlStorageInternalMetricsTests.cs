@@ -27,10 +27,12 @@ namespace SkbKontur.SqlStorageCore.Tests
             var metricContext = new MetricContext(new MetricContextConfig(new AdHocMetricEventSender(e => metricEvent = e)));
             var storage = GetStorage(metricContext);
             var entity = GetEntity();
-            storage.CreateOrUpdate(entity);
-            storage.TryRead(entity.Id);
+            await storage.CreateOrUpdateAsync(entity);
+            await storage.TryReadAsync(entity.Id);
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("Read.SingleEntry.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
@@ -42,10 +44,12 @@ namespace SkbKontur.SqlStorageCore.Tests
             var storage = GetStorage(metricContext);
 
             var entities = GetEntities();
-            storage.CreateOrUpdate(entities);
-            storage.TryRead(entities.Select(x => x.Id).ToArray());
+            await storage.CreateOrUpdateAsync(entities);
+            await storage.TryReadAsync(entities.Select(x => x.Id).ToArray());
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("Read.Entries.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
@@ -57,10 +61,12 @@ namespace SkbKontur.SqlStorageCore.Tests
             var metricContext = new MetricContext(new MetricContextConfig(new AdHocMetricEventSender(e => metricEvent = e)));
             var storage = GetStorage(metricContext);
             var entities = GetEntities();
-            storage.CreateOrUpdate(entities);
-            storage.ReadAll();
+            await storage.CreateOrUpdateAsync(entities);
+            await storage.ReadAllAsync();
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("Read.All.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
@@ -72,10 +78,12 @@ namespace SkbKontur.SqlStorageCore.Tests
             var metricContext = new MetricContext(new MetricContextConfig(new AdHocMetricEventSender(e => metricEvent = e)));
             var storage = GetStorage(metricContext);
             var entity = GetEntity();
-            storage.CreateOrUpdate(entity);
-            storage.Delete(entity.Id);
+            await storage.CreateOrUpdateAsync(entity);
+            await storage.DeleteAsync(entity.Id);
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("Delete.SingleEntry.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
@@ -87,9 +95,11 @@ namespace SkbKontur.SqlStorageCore.Tests
             var metricContext = new MetricContext(new MetricContextConfig(new AdHocMetricEventSender(e => metricEvent = e)));
             var storage = GetStorage(metricContext);
             var entity = GetEntity();
-            storage.TryRead(entity.Id);
+            await storage.TryReadAsync(entity.Id);
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("Read.SingleEntry.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
@@ -101,9 +111,11 @@ namespace SkbKontur.SqlStorageCore.Tests
             var metricContext = new MetricContext(new MetricContextConfig(new AdHocMetricEventSender(e => metricEvent = e)));
             var storage = GetStorage(metricContext);
             var entity = GetEntity();
-            storage.Delete(entity.Id);
+            await storage.DeleteAsync(entity.Id);
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("Delete.SingleEntry.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
@@ -115,9 +127,11 @@ namespace SkbKontur.SqlStorageCore.Tests
             var metricContext = new MetricContext(new MetricContextConfig(new AdHocMetricEventSender(e => metricEvent = e)));
             var storage = GetStorage(metricContext);
             var entities = GetEntities();
-            storage.CreateOrUpdate(entities);
+            await storage.CreateOrUpdateAsync(entities);
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("CreateOrUpdate.Entries.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
@@ -130,10 +144,12 @@ namespace SkbKontur.SqlStorageCore.Tests
             var storage = GetStorage(metricContext);
 
             var entities = GetEntities();
-            storage.CreateOrUpdate(entities);
-            storage.Find(e => e.StringProperty == stringProperty, entitiesCount);
+            await storage.CreateOrUpdateAsync(entities);
+            await storage.FindAsync(e => e.StringProperty == stringProperty, entitiesCount);
 
             metricEvent.Should().NotBeNull();
+            metricEvent!.Tags.Count.Should().Be(1);
+            metricEvent!.Tags.First().Value.Should().Be("Find.ByCriterion.Time");
             metricEvent!.Unit.Should().Be("seconds");
             metricEvent!.Value.Should().BeLessThan(1);
         }
