@@ -51,6 +51,7 @@ namespace SkbKontur.SqlStorageCore.Benchmarks
         {
             await sqlStorage.ReadAllAsync();
         }
+
         // private ConcurrentSqlStorage<TestValueTypedPropertiesStorageElement, Guid> storage;
         // private TestValueTypedPropertiesStorageElement entity;
 
